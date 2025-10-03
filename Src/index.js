@@ -14,7 +14,7 @@ if (!fs.existsSync(envPath)) {
 const app = express();
 const APP_PORT = process.env.APP_PORT || 3000;
 
-// Middleware de CORS
+// Prevenção de CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
