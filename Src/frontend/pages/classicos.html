@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos Clássicos - GameStore Digital</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <div class="alien-icon"></div>
+                </div>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="../index.html" class="nav-link">Jogos</a></li>
+                    <li><a href="classicos.html" class="nav-link active">Clássicos</a></li>
+                    <li><a href="noticias.html" class="nav-link">Notícias</a></li>
+                    <li><a href="suporte.html" class="nav-link">Suporte</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <button class="btn-login" onclick="toggleAuthModal()">Entrar/Registrar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <button class="breadcrumb-btn">INÍCIO > JOGOS CLÁSSICOS</button>
+        </div>
+
+        <!-- Content Container -->
+        <div class="content-container">
+            <!-- Filters Sidebar -->
+            <aside class="filters-sidebar">
+                <div class="filter-section">
+                    <h3 class="filter-title">FILTROS:</h3>
+                    <div class="filter-categories">
+                        <button class="filter-btn" data-category="rpg">RPG</button>
+                        <button class="filter-btn" data-category="fps">FPS</button>
+                        <button class="filter-btn" data-category="mmorpg">MMORPG</button>
+                        <button class="filter-btn" data-category="arcade">Arcade</button>
+                        <button class="filter-btn" data-category="platform">Plataforma</button>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <h3 class="filter-title">DÉCADA</h3>
+                    <div class="filter-categories">
+                        <button class="filter-btn" data-decade="1980">1980s</button>
+                        <button class="filter-btn" data-decade="1990">1990s</button>
+                        <button class="filter-btn" data-decade="2000">2000s</button>
+                        <button class="filter-btn" data-decade="2010">2010s</button>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <h3 class="filter-title">FAIXA DE PREÇO</h3>
+                    <div class="price-range">
+                        <input type="range" class="price-slider" min="0" max="50" value="25">
+                        <div class="price-labels">
+                            <span>R$ 0</span>
+                            <span>R$ 50</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Games Content -->
+            <section class="games-content">
+                <div class="page-header">
+                    <h1 class="page-title">JOGOS CLÁSSICOS</h1>
+                    <p class="page-description">Descubra os jogos que marcaram época e definiram gerações</p>
+                </div>
+
+                <!-- Search and Sort -->
+                <div class="search-sort-bar">
+                    <div class="search-container">
+                        <input type="text" id="gameSearch" placeholder="Buscar jogos clássicos..." class="search-input">
+                    </div>
+                    <div class="sort-container">
+                        <select id="gameSort" class="sort-select">
+                            <option value="year-desc">Mais Antigos</option>
+                            <option value="year-asc">Mais Recentes</option>
+                            <option value="title-asc">A-Z</option>
+                            <option value="title-desc">Z-A</option>
+                            <option value="price-asc">Menor Preço</option>
+                            <option value="price-desc">Maior Preço</option>
+                            <option value="rating">Melhor Avaliados</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Classic Games Grid -->
+                <div class="games-grid" id="classic-games">
+                    <!-- Games will be loaded dynamically -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Pagination will be generated dynamically -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="sobre.html" class="footer-link">Sobre nós</a>
+                <a href="faq.html" class="footer-link">FAQ</a>
+                <a href="politicas.html" class="footer-link">Políticas</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Game Detail Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content game-detail">
+            <span class="close" onclick="closeGameModal()">&times;</span>
+            <div class="game-detail-content">
+                <div class="game-image">
+                    <img id="gameImage" src="" alt="">
+                </div>
+                <div class="game-info">
+                    <h2 id="gameTitle"></h2>
+                    <p id="gameDescription"></p>
+                    <div class="game-meta">
+                        <span id="gameCategory"></span>
+                        <span id="gamePrice"></span>
+                        <span id="gameYear"></span>
+                    </div>
+                    <div class="game-actions">
+                        <button class="btn-add-cart">Adicionar ao Carrinho</button>
+                        <button class="btn-add-wishlist">Lista de Desejos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/games.js"></script>
+    <script src="../js/classics.js"></script>
+</body>
+</html>

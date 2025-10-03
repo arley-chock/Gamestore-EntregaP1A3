@@ -1,0 +1,579 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: #D2B48C;
+    color: #2F2F2F;
+    line-height: 1.6;
+}
+
+.conteiner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.cabecalho {
+    background-color: #8B4513;
+    padding: 15px 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cabecalho .conteiner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.link-logo {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+    margin-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.icone-logo {
+    width: 50px;
+    height: 50px;
+    background-color: #2F2F2F;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.icone-alien {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(45deg, #4169E1, #1E90FF);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    animation: pulsar 2s infinite;
+}
+
+@keyframes pulsar {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.lista-navegacao {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.link-navegacao {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.link-navegacao:hover {
+    color: #FFD700;
+}
+
+.botao-entrar {
+    background-color: #DC143C;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.botao-entrar:hover {
+    background-color: #B22222;
+}
+
+.conteudo-principal {
+    margin-top: 80px;
+    padding: 20px 0;
+    min-height: calc(100vh - 160px);
+}
+
+.navegacao-breadcrumb {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.botao-breadcrumb {
+    background-color: #8B4513;
+    color: #D2B48C;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.conteiner-conteudo {
+    display: flex;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.barra-lateral-filtros {
+    width: 250px;
+    background-color: #CD853F;
+    border-radius: 15px;
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.secao-filtro {
+    margin-bottom: 25px;
+}
+
+.titulo-filtro {
+    color: #2F2F2F;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.categorias-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.botao-filtro {
+    background-color: #8B4513;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.botao-filtro:hover,
+.botao-filtro.ativo {
+    background-color: #A0522D;
+}
+
+.faixa-preco {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slider-preco {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #8B4513;
+    outline: none;
+    cursor: pointer;
+}
+
+.slider-preco::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #DC143C;
+    cursor: pointer;
+}
+
+.rotulos-preco {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.conteudo-jogos {
+    flex: 1;
+    background-color: #F5F5F5;
+    border-radius: 15px;
+    padding: 30px;
+    border: 2px solid #D3D3D3;
+}
+
+.secao-jogo {
+    margin-bottom: 40px;
+}
+
+.titulo-secao {
+    color: #2F2F2F;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.grade-jogos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.cartao-jogo {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.cartao-jogo:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.imagem-jogo {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.imagem-jogo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.cartao-jogo:hover .imagem-jogo img {
+    transform: scale(1.05);
+}
+
+.sobreposicao-jogo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 20px;
+    color: white;
+}
+
+.titulo-jogo {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.subtitulo-jogo {
+    font-size: 14px;
+    opacity: 0.9;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.rodape {
+    background-color: #8B4513;
+    padding: 20px 0;
+    margin-top: 50px;
+}
+
+.links-rodape {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.link-rodape {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+.link-rodape:hover {
+    color: #FFD700;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.conteudo-modal {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.fechar {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+.fechar:hover {
+    color: #DC143C;
+}
+
+.abas-autenticacao {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #D3D3D3;
+}
+
+.botao-aba {
+    background: none;
+    border: none;
+    padding: 15px 30px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.botao-aba.ativo {
+    color: #DC143C;
+    border-bottom-color: #DC143C;
+}
+
+.formulario-autenticacao {
+    display: none;
+}
+
+.formulario-autenticacao.ativo {
+    display: block;
+}
+
+.formulario-autenticacao h3 {
+    margin-bottom: 25px;
+    color: #2F2F2F;
+    text-align: center;
+    font-size: 24px;
+}
+
+.grupo-formulario {
+    margin-bottom: 20px;
+}
+
+.grupo-formulario input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #D3D3D3;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.grupo-formulario input:focus {
+    outline: none;
+    border-color: #DC143C;
+}
+
+.botao-enviar {
+    width: 100%;
+    background-color: #DC143C;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.botao-enviar:hover {
+    background-color: #B22222;
+}
+
+.detalhe-jogo {
+    max-width: 800px;
+}
+
+.conteudo-detalhe-jogo {
+    display: flex;
+    gap: 30px;
+}
+
+.detalhe-jogo .imagem-jogo {
+    flex: 1;
+    height: 300px;
+}
+
+.informacoes-jogo {
+    flex: 1;
+}
+
+.informacoes-jogo h2 {
+    color: #2F2F2F;
+    margin-bottom: 15px;
+    font-size: 28px;
+}
+
+.informacoes-jogo p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.meta-jogo {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.meta-jogo span {
+    background-color: #8B4513;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.acoes-jogo {
+    display: flex;
+    gap: 15px;
+}
+
+.botao-adicionar-carrinho,
+.botao-adicionar-lista-desejos {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.botao-adicionar-carrinho {
+    background-color: #DC143C;
+    color: white;
+}
+
+.botao-adicionar-carrinho:hover {
+    background-color: #B22222;
+}
+
+.botao-adicionar-lista-desejos {
+    background-color: #8B4513;
+    color: white;
+}
+
+.botao-adicionar-lista-desejos:hover {
+    background-color: #A0522D;
+}
+
+@media (max-width: 768px) {
+    .conteiner-conteudo {
+        flex-direction: column;
+    }
+    
+    .barra-lateral-filtros {
+        width: 100%;
+        position: static;
+    }
+    
+    .grade-jogos {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    
+    .lista-navegacao {
+        gap: 15px;
+    }
+    
+    .link-navegacao {
+        font-size: 14px;
+    }
+    
+    .conteudo-detalhe-jogo {
+        flex-direction: column;
+    }
+    
+    .acoes-jogo {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .cabecalho .conteiner {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .lista-navegacao {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .grade-jogos {
+        grid-template-columns: 1fr;
+    }
+    
+    .conteudo-modal {
+        margin: 10% auto;
+        width: 95%;
+        padding: 20px;
+    }
+}

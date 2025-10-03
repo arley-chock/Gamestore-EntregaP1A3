@@ -1,0 +1,442 @@
+.pagina-autenticacao {
+    background: linear-gradient(135deg, #D2B48C 0%, #CD853F 50%, #8B4513 100%);
+    min-height: 100vh;
+}
+
+.conteudo-principal-autenticacao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 160px);
+    padding: 40px 20px;
+}
+
+.conteiner-autenticacao {
+    width: 100%;
+    max-width: 450px;
+}
+
+.cartao-autenticacao {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+.cartao-autenticacao::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #DC143C, #8B4513, #4169E1);
+}
+
+.abas-autenticacao {
+    display: flex;
+    background-color: #F5F5F5;
+    border-bottom: 2px solid #D3D3D3;
+}
+
+.botao-aba {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    color: #666;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.botao-aba.ativo {
+    color: #DC143C;
+    background-color: white;
+}
+
+.botao-aba.ativo::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #DC143C;
+}
+
+.formulario-autenticacao {
+    display: none;
+    padding: 40px;
+}
+
+.formulario-autenticacao.ativo {
+    display: block;
+}
+
+.titulo-formulario {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2F2F2F;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.subtitulo-formulario {
+    font-size: 16px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.grupo-formulario {
+    margin-bottom: 25px;
+}
+
+.rotulo-formulario {
+    display: block;
+    font-weight: bold;
+    color: #2F2F2F;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.entrada-formulario {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #D3D3D3;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #FAFAFA;
+}
+
+.entrada-formulario:focus {
+    outline: none;
+    border-color: #DC143C;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+}
+
+.entrada-formulario.erro {
+    border-color: #DC143C;
+    background-color: #FFF5F5;
+}
+
+.conteiner-senha {
+    position: relative;
+}
+
+.alternar-senha {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.alternar-senha:hover {
+    color: #DC143C;
+}
+
+.erro-formulario {
+    color: #DC143C;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.erro-formulario.mostrar {
+    display: block;
+}
+
+.forca-senha {
+    margin-top: 8px;
+    height: 4px;
+    background-color: #D3D3D3;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.barra-forca-senha {
+    height: 100%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.forca-senha.fraca .barra-forca-senha {
+    width: 33%;
+    background-color: #DC143C;
+}
+
+.forca-senha.media .barra-forca-senha {
+    width: 66%;
+    background-color: #FFA500;
+}
+
+.forca-senha.forte .barra-forca-senha {
+    width: 100%;
+    background-color: #32CD32;
+}
+
+.opcoes-formulario {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.conteiner-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    position: relative;
+}
+
+.conteiner-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.marcacao-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #D3D3D3;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.conteiner-checkbox input[type="checkbox"]:checked + .marcacao-checkbox {
+    background-color: #DC143C;
+    border-color: #DC143C;
+}
+
+.conteiner-checkbox input[type="checkbox"]:checked + .marcacao-checkbox::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.esqueci-senha {
+    color: #DC143C;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.esqueci-senha:hover {
+    color: #B22222;
+}
+
+.botao-enviar {
+    width: 100%;
+    background: linear-gradient(135deg, #DC143C, #B22222);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.botao-enviar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 20, 60, 0.3);
+}
+
+.botao-enviar:active {
+    transform: translateY(0);
+}
+
+.botao-enviar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.texto-botao-carregando {
+    display: none;
+}
+
+.botao-enviar.carregando .texto-botao {
+    display: none;
+}
+
+.botao-enviar.carregando .texto-botao-carregando {
+    display: inline;
+}
+
+.rodape-formulario {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #D3D3D3;
+}
+
+.rodape-formulario p {
+    color: #666;
+    font-size: 14px;
+}
+
+.rodape-formulario a {
+    color: #DC143C;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.rodape-formulario a:hover {
+    color: #B22222;
+}
+
+@keyframes deslizarEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.formulario-autenticacao.ativo {
+    animation: deslizarEntrada 0.5s ease-out;
+}
+
+@keyframes tremer {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.entrada-formulario.erro {
+    animation: tremer 0.5s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .conteudo-principal-autenticacao {
+        padding: 20px 15px;
+    }
+    
+    .cartao-autenticacao {
+        border-radius: 15px;
+    }
+    
+    .formulario-autenticacao {
+        padding: 30px 25px;
+    }
+    
+    .titulo-formulario {
+        font-size: 24px;
+    }
+    
+    .subtitulo-formulario {
+        font-size: 14px;
+    }
+    
+    .entrada-formulario {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    .botao-enviar {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    .opcoes-formulario {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .conteudo-principal-autenticacao {
+        padding: 15px 10px;
+    }
+    
+    .formulario-autenticacao {
+        padding: 25px 20px;
+    }
+    
+    .titulo-formulario {
+        font-size: 20px;
+    }
+    
+    .botao-aba {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    .entrada-formulario {
+        padding: 10px 12px;
+    }
+    
+    .botao-enviar {
+        padding: 12px;
+    }
+}
+
+.entrada-formulario.valido {
+    border-color: #32CD32;
+    background-color: #F0FFF0;
+}
+
+.entrada-formulario.valido:focus {
+    box-shadow: 0 0 0 3px rgba(50, 205, 50, 0.1);
+}
+
+.sobreposicao-carregamento {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.spinner-carregamento {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #F5F5F5;
+    border-top: 5px solid #DC143C;
+    border-radius: 50%;
+    animation: girar 1s linear infinite;
+}
+
+@keyframes girar {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

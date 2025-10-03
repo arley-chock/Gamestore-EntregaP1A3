@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .jogo { border: 1px solid #ccc; margin: 10px; padding: 10px; }
+        .erro { color: red; }
+        .sucesso { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Teste Simples da API</h1>
+    <div id="status">Carregando...</div>
+    <div id="jogos"></div>
+    
+    <script>
+        const URL_BASE_API = 'http://localhost:3000/api/v1';
+        
+        async function carregarJogos() {
+            const statusDiv = document.getElementById('status');
+            const jogosDiv = document.getElementById('jogos');
+            
+            try {
+                statusDiv.innerHTML = '<span class="sucesso">Conectando à API...</span>';
+                
+                const response = await fetch(`${URL_BASE_API}/jogos`);
+                console.log('Resposta da API:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const jogos = await response.json();
+                console.log('Jogos recebidos:', jogos);
+                
+                statusDiv.innerHTML = `<span class="sucesso">Sucesso! ${jogos.length} jogos carregados</span>`;
+                
+                jogosDiv.innerHTML = jogos.map(jogo => `
+                    <div class="jogo">
+                        <h3>${jogo.nome}</h3>
+                        <p>Ano: ${jogo.ano}</p>
+                        <p>Preço: R$ ${jogo.preco}</p>
+                        <p>Descrição: ${jogo.descricao}</p>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                statusDiv.innerHTML = `<span class="erro">Erro: ${error.message}</span>`;
+                jogosDiv.innerHTML = '';
+            }
+        }
+        
+        window.onload = carregarJogos;
+    </script>
+</body>
+</html>
