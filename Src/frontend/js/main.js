@@ -108,15 +108,18 @@ function criarCartaoJogo(jogo) {
     
     cartao.innerHTML = `
         <div class="imagem-jogo">
-            <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #8B4513, #DC143C); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">
-                ${jogo.nome.charAt(0)}
-            </div>
+            <img class="imagem-jogo-src" alt="${jogo.nome}">
             <div class="sobreposicao-jogo">
                 <div class="titulo-jogo">${jogo.nome.toUpperCase()}</div>
                 <div class="subtitulo-jogo">${jogo.ano}</div>
             </div>
         </div>
     `;
+    
+    const imgEl = cartao.querySelector('.imagem-jogo-src');
+    if (imgEl) {
+        setImageWithFallback(imgEl, jogo.nome, { height: 200 });
+    }
     
     return cartao;
 }
@@ -150,28 +153,86 @@ function mostrarDetalhesJogo(jogo) {
     const categoriaJogo = document.getElementById('categoriaJogo');
     const precoJogo = document.getElementById('precoJogo');
     const anoJogo = document.getElementById('anoJogo');
-    
-    // Criar placeholder para imagem
-    const placeholderDiv = document.createElement('div');
-    placeholderDiv.style.cssText = 'width: 100%; height: 300px; background: linear-gradient(135deg, #8B4513, #DC143C); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; font-weight: bold;';
-    placeholderDiv.textContent = jogo.nome.charAt(0);
-    
-    // Limpar e adicionar placeholder
-    imagemJogo.innerHTML = '';
-    imagemJogo.appendChild(placeholderDiv);
-    
+
+if (jogo.foto) {
+    imagemJogo.src = jogo.foto;
+    imagemJogo.alt = jogo.nome;
+} else {
+    // Reaproveita o mesmo sistema de fallback dos cards
+    setImageWithFallback(imagemJogo, jogo.nome, { height: 250 });
+}
+
+
     tituloJogo.textContent = jogo.nome;
     descricaoJogo.textContent = jogo.descricao;
     categoriaJogo.textContent = `Categoria: ${jogo.fkCategoria}`;
     precoJogo.textContent = `R$ ${jogo.preco.toFixed(2)}`;
     anoJogo.textContent = `Ano: ${jogo.ano}`;
-    
+
     modal.style.display = 'block';
 }
 
 function fecharModalJogo() {
     document.getElementById('modalJogo').style.display = 'none';
 }
+
+// Helpers de imagem para jogos
+function slugifyGameName(name) {
+    if (!name) return '';
+    return name
+        .toString()
+        .normalize('NFD').replace(/\p{Diacritic}+/gu, '') // remove acentos
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+function getLocalImageCandidates(name) {
+    const slug = slugifyGameName(name);
+    const exts = ['png', 'jpg', 'jpeg', 'webp'];
+    return exts.map(ext => `images/${slug}.${ext}`);
+}
+
+function createGradientPlaceholder(letter, width, height) {
+    const placeholderDiv = document.createElement('div');
+    placeholderDiv.style.cssText = `width: 100%; height: ${height || 200}px; background: linear-gradient(135deg, #8B4513, #DC143C); display: flex; align-items: center; justify-content: center; color: white; font-size: ${height ? Math.floor(height/6) : 24}px; font-weight: bold;`;
+    placeholderDiv.textContent = (letter || '?').toString().charAt(0);
+    return placeholderDiv;
+}
+
+function setImageWithFallback(imgEl, gameName, options = {}) {
+    const { height } = options;
+    const candidates = getLocalImageCandidates(gameName);
+    let index = 0;
+
+    function tryNext() {
+        if (index < candidates.length) {
+            imgEl.onerror = () => {
+                index += 1;
+                tryNext();
+            };
+            imgEl.src = candidates[index];
+            imgEl.alt = gameName || '';
+            if (height) {
+                imgEl.style.height = `${height}px`;
+                imgEl.style.objectFit = 'cover';
+                imgEl.style.width = '100%';
+            }
+        } else {
+            // Fallback visual: substitui IMG por placeholder gradiente
+            const container = imgEl.parentElement;
+            if (container) {
+                const ph = createGradientPlaceholder(gameName, container.clientWidth, height || 200);
+                container.replaceChild(ph, imgEl);
+            }
+        }
+    }
+
+    tryNext();
+}
+
+// Expor helpers globalmente para uso em outras páginas (ex.: clássicos)
+window.setImageWithFallback = setImageWithFallback;
 
 function configurarFiltros() {
     const botoesFiltro = document.querySelectorAll('.botao-filtro');

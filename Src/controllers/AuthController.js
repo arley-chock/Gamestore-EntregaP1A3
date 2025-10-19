@@ -12,13 +12,12 @@ class AuthController {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
         }
 
-        if (dataNascimento) {
+      if (dataNascimento) {
             const [dia, mes, ano] = dataNascimento.split('/');
             dataNascimento = new Date(`${ano}-${mes}-${dia}T00:00:00`);
             if (isNaN(Date.parse(dataNascimento))) {
                 return res.status(400).json({ message: 'Data de nascimento inválida.' });
             }
-            dataNascimento = dataNascimento.toISOString();
         }
 
         try {

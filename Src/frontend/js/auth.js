@@ -79,48 +79,48 @@ async function handleRegister(event) {
         mostrarErro('Por favor, preencha todos os campos.');
         return;
     }
-    
+
     if (password.length < 8) {
         mostrarErro('A senha deve ter pelo menos 8 caracteres.');
         return;
     }
-    
+
     if (!isValidEmail(email)) {
         mostrarErro('Por favor, insira um e-mail válido.');
         return;
     }
-    
+
+    // 🔹 Converter formato da data para DD/MM/YYYY (compatível com backend)
+    let formattedDate = birthDate;
+    if (birthDate.includes('-')) {
+        const [ano, mes, dia] = birthDate.split('-');
+        formattedDate = `${dia}/${mes}/${ano}`;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 nome: name,
                 email: email,
-                dataNascimento: birthDate,
+                dataNascimento: formattedDate,
                 senha: password
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
-            // Registro bem-sucedido
             localStorage.setItem('authToken', data.token);
             usuarioAtual = data.usuario;
-            
             atualizarInterfaceUsuario();
             fecharModalAutenticacao();
             limparFormularios();
             mostrarSucesso('Conta criada com sucesso!');
-            
         } else {
-            // Erro no registro
             mostrarErro(data.message || 'Erro ao criar conta. Tente novamente.');
         }
-        
     } catch (error) {
         console.error('Erro no registro:', error);
         mostrarErro('Erro de conexão. Tente novamente.');
@@ -132,13 +132,8 @@ function limparFormularios() {
     const loginForm = document.getElementById('formularioEntrar');
     const registerForm = document.getElementById('formularioRegistrar');
     
-    if (loginForm) {
-        loginForm.reset();
-    }
-    
-    if (registerForm) {
-        registerForm.reset();
-    }
+    if (loginForm) loginForm.reset();
+    if (registerForm) registerForm.reset();
 }
 
 // Validar e-mail

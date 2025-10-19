@@ -24,6 +24,21 @@ function setupGameSearch() {
 }
 
 // Configurar filtros de jogos
+const gameSearchInput = document.getElementById('gameSearchInput');
+gameSearchInput.addEventListener('input', handleGameSearch);
+
+async function handleGameSearch(event) {
+    const searchTerm = event.target.value.toLowerCase();
+
+    if (searchTerm.length < 2) {
+        renderizarJogos();
+        return;
+    }
+
+    const filteredGames = jogos.filter(game => game.nome.toLowerCase().includes(searchTerm));
+
+    renderFilteredGames(filteredGames);
+}
 function setupGameFilters() {
     const categoryFilters = document.querySelectorAll('.botao-filtro');
     const priceSlider = document.querySelector('.slider-preco');

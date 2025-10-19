@@ -43,6 +43,7 @@
             <aside class="barra-lateral-filtros">
                 <div class="secao-filtro">
                     <h3 class="titulo-filtro">FILTROS:</h3>
+                    <input type="text" id="gameSearchInput" placeholder="Pesquisar jogos...">
                     <div class="categorias-filtro">
                         <button class="botao-filtro" data-category="rpg">RPG</button>
                         <button class="botao-filtro" data-category="fps">FPS</button>
@@ -145,9 +146,11 @@
         <div class="conteudo-modal detalhe-jogo">
             <span class="fechar" onclick="fecharModalJogo()">&times;</span>
             <div class="conteudo-detalhe-jogo">
-                <div class="imagem-jogo">
-                    <img id="imagemJogo" src="" alt="">
-                </div>
+             <div class="imagem-jogo">
+             <img id="imagemJogo" src="" alt="">
+            </div>
+
+
                 <div class="informacoes-jogo">
                     <h2 id="tituloJogo"></h2>
                     <p id="descricaoJogo"></p>

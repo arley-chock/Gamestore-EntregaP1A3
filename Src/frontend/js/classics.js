@@ -66,7 +66,7 @@ function createClassicGameCard(game) {
     
     card.innerHTML = `
         <div class="game-image">
-            <img src="${game.imagem || 'images/placeholder-classic.jpg'}" alt="${game.titulo}">
+            <img class="classic-image" alt="${game.titulo}">
             <div class="classic-badge">${decade}s</div>
             <div class="game-overlay">
                 <div class="game-title">${game.titulo.toUpperCase()}</div>
@@ -78,6 +78,11 @@ function createClassicGameCard(game) {
             <div class="game-category">${game.categoria}</div>
         </div>
     `;
+    
+    const imgEl = card.querySelector('.classic-image');
+    if (imgEl && window.setImageWithFallback) {
+        setImageWithFallback(imgEl, game.titulo, { height: 200 });
+    }
     
     return card;
 }

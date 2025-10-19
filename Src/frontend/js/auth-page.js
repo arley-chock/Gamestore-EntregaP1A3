@@ -195,14 +195,25 @@ function validateRegisterForm(name, email, birthDate, password, confirmPassword,
     }
     
     // Validar data de nascimento
-    if (!birthDate) {
-        showFieldError('registerBirth', 'Data de nascimento é obrigatória');
+if (!birthDate) {
+    showFieldError('registerBirth', 'Data de nascimento é obrigatória');
+    isValid = false;
+} else {
+    const birth = new Date(birthDate);
+
+    if (isNaN(birth.getTime())) {
+        showFieldError('registerBirth', 'Data de nascimento inválida');
         isValid = false;
     } else {
-        const birth = new Date(birthDate);
         const today = new Date();
-        const age = today.getFullYear() - birth.getFullYear();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        const dayDiff = today.getDate() - birth.getDate();
         
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            age--; // ainda não fez aniversário este ano
+        }
+
         if (age < 13) {
             showFieldError('registerBirth', 'Você deve ter pelo menos 13 anos');
             isValid = false;
@@ -213,6 +224,8 @@ function validateRegisterForm(name, email, birthDate, password, confirmPassword,
             clearFieldError('registerBirth');
         }
     }
+}
+
     
     // Validar senha
     if (!password) {
