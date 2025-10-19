@@ -1,12 +1,14 @@
-// Autenticação e gerenciamento de usuários
+// Autenticação simplificada - usa funções do main.js
+const API_BASE_URL = 'http://localhost:3000/api/v1';
+
 document.addEventListener('DOMContentLoaded', function() {
     setupAuthForms();
 });
 
 // Configurar formulários de autenticação
 function setupAuthForms() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
+    const loginForm = document.getElementById('formularioEntrar');
+    const registerForm = document.getElementById('formularioRegistrar');
     
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
@@ -21,17 +23,15 @@ function setupAuthForms() {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    const email = document.getElementById('emailEntrar').value;
+    const password = document.getElementById('senhaEntrar').value;
     
     if (!email || !password) {
-        showError('Por favor, preencha todos os campos.');
+        mostrarErro('Por favor, preencha todos os campos.');
         return;
     }
     
     try {
-        showLoading('Entrando...');
-        
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
@@ -48,26 +48,21 @@ async function handleLogin(event) {
         if (response.ok) {
             // Login bem-sucedido
             localStorage.setItem('authToken', data.token);
-            currentUser = data.usuario;
+            usuarioAtual = data.usuario;
             
-            updateUserInterface();
-            closeAuthModal();
-            clearAuthForms();
-            showSuccess('Login realizado com sucesso!');
-            
-            // Recarregar dados do usuário
-            await loadUserData();
+            atualizarInterfaceUsuario();
+            fecharModalAutenticacao();
+            limparFormularios();
+            mostrarSucesso('Login realizado com sucesso!');
             
         } else {
             // Erro no login
-            showError(data.message || 'Erro ao fazer login. Verifique suas credenciais.');
+            mostrarErro(data.message || 'Erro ao fazer login. Verifique suas credenciais.');
         }
         
     } catch (error) {
         console.error('Erro no login:', error);
-        showError('Erro de conexão. Tente novamente.');
-    } finally {
-        hideLoading();
+        mostrarErro('Erro de conexão. Tente novamente.');
     }
 }
 
@@ -75,29 +70,27 @@ async function handleLogin(event) {
 async function handleRegister(event) {
     event.preventDefault();
     
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
-    const birthDate = document.getElementById('registerBirth').value;
-    const password = document.getElementById('registerPassword').value;
+    const name = document.getElementById('nomeRegistrar').value;
+    const email = document.getElementById('emailRegistrar').value;
+    const birthDate = document.getElementById('nascimentoRegistrar').value;
+    const password = document.getElementById('senhaRegistrar').value;
     
     if (!name || !email || !birthDate || !password) {
-        showError('Por favor, preencha todos os campos.');
+        mostrarErro('Por favor, preencha todos os campos.');
         return;
     }
     
     if (password.length < 8) {
-        showError('A senha deve ter pelo menos 8 caracteres.');
+        mostrarErro('A senha deve ter pelo menos 8 caracteres.');
         return;
     }
     
     if (!isValidEmail(email)) {
-        showError('Por favor, insira um e-mail válido.');
+        mostrarErro('Por favor, insira um e-mail válido.');
         return;
     }
     
     try {
-        showLoading('Criando conta...');
-        
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
@@ -116,124 +109,28 @@ async function handleRegister(event) {
         if (response.ok) {
             // Registro bem-sucedido
             localStorage.setItem('authToken', data.token);
-            currentUser = data.usuario;
+            usuarioAtual = data.usuario;
             
-            updateUserInterface();
-            closeAuthModal();
-            clearAuthForms();
-            showSuccess('Conta criada com sucesso!');
-            
-            // Recarregar dados do usuário
-            await loadUserData();
+            atualizarInterfaceUsuario();
+            fecharModalAutenticacao();
+            limparFormularios();
+            mostrarSucesso('Conta criada com sucesso!');
             
         } else {
             // Erro no registro
-            showError(data.message || 'Erro ao criar conta. Tente novamente.');
+            mostrarErro(data.message || 'Erro ao criar conta. Tente novamente.');
         }
         
     } catch (error) {
         console.error('Erro no registro:', error);
-        showError('Erro de conexão. Tente novamente.');
-    } finally {
-        hideLoading();
+        mostrarErro('Erro de conexão. Tente novamente.');
     }
-}
-
-// Carregar dados do usuário
-async function loadUserData() {
-    if (!currentUser) return;
-    
-    try {
-        // Carregar carrinho
-        await loadCart();
-        
-        // Carregar lista de desejos
-        await loadWishlist();
-        
-        // Carregar histórico de compras
-        await loadPurchaseHistory();
-        
-    } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error);
-    }
-}
-
-// Carregar carrinho
-async function loadCart() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/carrinho`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const cart = await response.json();
-            updateCartUI(cart);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar carrinho:', error);
-    }
-}
-
-// Carregar lista de desejos
-async function loadWishlist() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/lista-desejo`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const wishlist = await response.json();
-            updateWishlistUI(wishlist);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar lista de desejos:', error);
-    }
-}
-
-// Carregar histórico de compras
-async function loadPurchaseHistory() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/vendas/historico`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const history = await response.json();
-            updatePurchaseHistoryUI(history);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar histórico:', error);
-    }
-}
-
-// Atualizar UI do carrinho
-function updateCartUI(cart) {
-    // Implementar atualização da UI do carrinho
-    console.log('Carrinho atualizado:', cart);
-}
-
-// Atualizar UI da lista de desejos
-function updateWishlistUI(wishlist) {
-    // Implementar atualização da UI da lista de desejos
-    console.log('Lista de desejos atualizada:', wishlist);
-}
-
-// Atualizar UI do histórico de compras
-function updatePurchaseHistoryUI(history) {
-    // Implementar atualização da UI do histórico
-    console.log('Histórico atualizado:', history);
 }
 
 // Limpar formulários de autenticação
-function clearAuthForms() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
+function limparFormularios() {
+    const loginForm = document.getElementById('formularioEntrar');
+    const registerForm = document.getElementById('formularioRegistrar');
     
     if (loginForm) {
         loginForm.reset();
@@ -252,7 +149,7 @@ function isValidEmail(email) {
 
 // Verificar se usuário está logado
 function isLoggedIn() {
-    return currentUser !== null && localStorage.getItem('authToken') !== null;
+    return usuarioAtual !== null && localStorage.getItem('authToken') !== null;
 }
 
 // Obter token de autenticação
@@ -263,99 +160,37 @@ function getAuthToken() {
 // Requerer autenticação
 function requireAuth() {
     if (!isLoggedIn()) {
-        showError('Você precisa estar logado para acessar esta funcionalidade.');
-        toggleAuthModal();
+        mostrarErro('Você precisa estar logado para acessar esta funcionalidade.');
+        alternarModalAutenticacao();
         return false;
     }
     return true;
 }
 
-// Atualizar perfil do usuário
-async function updateProfile(profileData) {
-    if (!requireAuth()) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/usuario/perfil`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify(profileData)
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            currentUser = data.usuario;
-            updateUserInterface();
-            showSuccess('Perfil atualizado com sucesso!');
-        } else {
-            showError(data.message || 'Erro ao atualizar perfil.');
-        }
-        
-    } catch (error) {
-        console.error('Erro ao atualizar perfil:', error);
-        showError('Erro de conexão. Tente novamente.');
-    }
+// Funções de modal (usando as do main.js)
+function alternarModalAutenticacao() {
+    const modal = document.getElementById('modalAutenticacao');
+    modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
 }
 
-// Alterar senha
-async function changePassword(currentPassword, newPassword) {
-    if (!requireAuth()) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/usuario/senha`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({
-                senhaAtual: currentPassword,
-                novaSenha: newPassword
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showSuccess('Senha alterada com sucesso!');
-        } else {
-            showError(data.message || 'Erro ao alterar senha.');
-        }
-        
-    } catch (error) {
-        console.error('Erro ao alterar senha:', error);
-        showError('Erro de conexão. Tente novamente.');
-    }
+function fecharModalAutenticacao() {
+    document.getElementById('modalAutenticacao').style.display = 'none';
 }
 
-// Deletar conta
-async function deleteAccount() {
-    if (!requireAuth()) return;
+function alternarAba(nomeAba) {
+    const formularioEntrar = document.getElementById('formularioEntrar');
+    const formularioRegistrar = document.getElementById('formularioRegistrar');
+    const abas = document.querySelectorAll('.botao-aba');
     
-    const confirmed = confirm('Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.');
-    if (!confirmed) return;
+    abas.forEach(aba => aba.classList.remove('ativo'));
     
-    try {
-        const response = await fetch(`${API_BASE_URL}/usuario/conta`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        
-        if (response.ok) {
-            logout();
-            showSuccess('Conta deletada com sucesso.');
-        } else {
-            const data = await response.json();
-            showError(data.message || 'Erro ao deletar conta.');
-        }
-        
-    } catch (error) {
-        console.error('Erro ao deletar conta:', error);
-        showError('Erro de conexão. Tente novamente.');
+    if (nomeAba === 'entrar') {
+        formularioEntrar.classList.add('ativo');
+        formularioRegistrar.classList.remove('ativo');
+        abas[0].classList.add('ativo');
+    } else {
+        formularioRegistrar.classList.add('ativo');
+        formularioEntrar.classList.remove('ativo');
+        abas[1].classList.add('ativo');
     }
 }

@@ -25,23 +25,23 @@ function setupGameSearch() {
 
 // Configurar filtros de jogos
 function setupGameFilters() {
-    const categoryFilters = document.querySelectorAll('.filter-btn');
-    const priceSlider = document.querySelector('.price-slider');
+    const categoryFilters = document.querySelectorAll('.botao-filtro');
+    const priceSlider = document.querySelector('.slider-preco');
     
     categoryFilters.forEach(filter => {
         filter.addEventListener('click', function() {
             // Remover active de todos os filtros
-            categoryFilters.forEach(f => f.classList.remove('active'));
+            categoryFilters.forEach(f => f.classList.remove('ativo'));
             // Adicionar active ao filtro clicado
-            this.classList.add('active');
+            this.classList.add('ativo');
             
-            applyGameFilters();
+            aplicarFiltros();
         });
     });
     
     if (priceSlider) {
         priceSlider.addEventListener('input', function() {
-            applyGameFilters();
+            aplicarFiltros();
         });
     }
 }
@@ -61,32 +61,32 @@ function handleGameSearch(event) {
     const searchTerm = event.target.value.toLowerCase();
     
     if (searchTerm.length < 2) {
-        renderGames();
+        renderizarJogos();
         return;
     }
     
-    const filteredGames = games.filter(game => 
-        game.titulo.toLowerCase().includes(searchTerm) ||
+    const filteredGames = jogos.filter(game => 
+        game.nome.toLowerCase().includes(searchTerm) ||
         game.descricao.toLowerCase().includes(searchTerm) ||
-        game.categoria.toLowerCase().includes(searchTerm) ||
-        game.desenvolvedora.toLowerCase().includes(searchTerm)
+        game.fkCategoria.toString().toLowerCase().includes(searchTerm) ||
+        game.fkEmpresa.toString().toLowerCase().includes(searchTerm)
     );
     
     renderFilteredGames(filteredGames);
 }
 
 // Aplicar filtros de jogos
-function applyGameFilters() {
-    const activeCategoryFilter = document.querySelector('.filter-btn.active');
-    const priceSlider = document.querySelector('.price-slider');
+function aplicarFiltros() {
+    const activeCategoryFilter = document.querySelector('.botao-filtro.ativo');
+    const priceSlider = document.querySelector('.slider-preco');
     
-    let filtered = [...games];
+    let filtered = [...jogos];
     
     // Filtro por categoria
     if (activeCategoryFilter && activeCategoryFilter.dataset.category) {
         const category = activeCategoryFilter.dataset.category.toLowerCase();
         filtered = filtered.filter(game => 
-            game.categoria.toLowerCase() === category
+            game.fkCategoria.toString().toLowerCase().includes(category)
         );
     }
     
@@ -96,8 +96,8 @@ function applyGameFilters() {
         filtered = filtered.filter(game => game.preco <= maxPrice);
     }
     
-    filteredGames = filtered;
-    renderGames();
+    jogosFiltrados = filtered;
+    renderizarJogos();
 }
 
 // Aplicar ordenação de jogos
@@ -106,14 +106,14 @@ function applyGameSorting() {
     if (!sortSelect) return;
     
     const sortBy = sortSelect.value;
-    let sorted = [...filteredGames];
+    let sorted = [...jogosFiltrados];
     
     switch (sortBy) {
         case 'title-asc':
-            sorted.sort((a, b) => a.titulo.localeCompare(b.titulo));
+            sorted.sort((a, b) => a.nome.localeCompare(b.nome));
             break;
         case 'title-desc':
-            sorted.sort((a, b) => b.titulo.localeCompare(a.titulo));
+            sorted.sort((a, b) => b.nome.localeCompare(a.nome));
             break;
         case 'price-asc':
             sorted.sort((a, b) => a.preco - b.preco);
@@ -122,13 +122,10 @@ function applyGameSorting() {
             sorted.sort((a, b) => b.preco - a.preco);
             break;
         case 'year-asc':
-            sorted.sort((a, b) => a.anoLancamento - b.anoLancamento);
+            sorted.sort((a, b) => a.ano - b.ano);
             break;
         case 'year-desc':
-            sorted.sort((a, b) => b.anoLancamento - a.anoLancamento);
-            break;
-        case 'rating':
-            sorted.sort((a, b) => (b.avaliacaoMedia || 0) - (a.avaliacaoMedia || 0));
+            sorted.sort((a, b) => b.ano - a.ano);
             break;
         default:
             sorted.sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro));
@@ -139,24 +136,24 @@ function applyGameSorting() {
 
 // Renderizar jogos filtrados
 function renderFilteredGames(gameList) {
-    renderGameSection('new-releases', getNewReleasesFromList(gameList));
-    renderGameSection('trending', getTrendingGamesFromList(gameList));
-    renderGameSection('recommendations', getRecommendedGamesFromList(gameList));
+    renderizarSecaoJogos('lancamentos', getNewReleasesFromList(gameList));
+    renderizarSecaoJogos('em-alta', getTrendingGamesFromList(gameList));
+    renderizarSecaoJogos('recomendacoes', getRecommendedGamesFromList(gameList));
 }
 
 // Obter lançamentos de uma lista específica
 function getNewReleasesFromList(gameList) {
     const currentYear = new Date().getFullYear();
     return gameList
-        .filter(game => game.anoLancamento >= currentYear - 1)
-        .sort((a, b) => new Date(b.dataCadastro) - new Date(a.dataCadastro))
+        .filter(game => game.ano >= currentYear - 1)
+        .sort((a, b) => b.ano - a.ano)
         .slice(0, 3);
 }
 
 // Obter jogos em alta de uma lista específica
 function getTrendingGamesFromList(gameList) {
     return gameList
-        .sort((a, b) => (b.avaliacoes || 0) - (a.avaliacoes || 0))
+        .sort((a, b) => b.preco - a.preco)
         .slice(0, 3);
 }
 
@@ -170,7 +167,7 @@ function getRecommendedGamesFromList(gameList) {
 
 // Carregar dados de jogos do usuário
 async function loadUserGameData() {
-    if (!isLoggedIn()) return;
+    if (!usuarioAtual) return;
     
     try {
         await Promise.all([
@@ -185,9 +182,9 @@ async function loadUserGameData() {
 // Carregar carrinho
 async function loadCart() {
     try {
-        const response = await fetch(`${API_BASE_URL}/carrinho`, {
+        const response = await fetch(`${URL_BASE_API}/carrinho`, {
             headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -203,9 +200,9 @@ async function loadCart() {
 // Carregar lista de desejos
 async function loadWishlist() {
     try {
-        const response = await fetch(`${API_BASE_URL}/lista-desejo`, {
+        const response = await fetch(`${URL_BASE_API}/lista-desejo`, {
             headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             }
         });
         
@@ -220,14 +217,18 @@ async function loadWishlist() {
 
 // Adicionar ao carrinho
 async function addToCart(gameId, quantity = 1) {
-    if (!requireAuth()) return false;
+    if (!usuarioAtual) {
+        mostrarErro('Você precisa estar logado para adicionar itens ao carrinho.');
+        alternarModalAutenticacao();
+        return false;
+    }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/carrinho`, {
+        const response = await fetch(`${URL_BASE_API}/carrinho`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             },
             body: JSON.stringify({
                 jogoId: gameId,
@@ -237,30 +238,34 @@ async function addToCart(gameId, quantity = 1) {
         
         if (response.ok) {
             await loadCart();
-            showSuccess('Jogo adicionado ao carrinho!');
+            mostrarSucesso('Jogo adicionado ao carrinho!');
             return true;
         } else {
             const data = await response.json();
-            showError(data.message || 'Erro ao adicionar ao carrinho.');
+            mostrarErro(data.message || 'Erro ao adicionar ao carrinho.');
             return false;
         }
     } catch (error) {
         console.error('Erro ao adicionar ao carrinho:', error);
-        showError('Erro de conexão. Tente novamente.');
+        mostrarErro('Erro de conexão. Tente novamente.');
         return false;
     }
 }
 
 // Adicionar à lista de desejos
 async function addToWishlist(gameId) {
-    if (!requireAuth()) return false;
+    if (!usuarioAtual) {
+        mostrarErro('Você precisa estar logado para adicionar à lista de desejos.');
+        alternarModalAutenticacao();
+        return false;
+    }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/lista-desejo`, {
+        const response = await fetch(`${URL_BASE_API}/lista-desejo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
             },
             body: JSON.stringify({
                 jogoId: gameId
@@ -269,103 +274,16 @@ async function addToWishlist(gameId) {
         
         if (response.ok) {
             await loadWishlist();
-            showSuccess('Jogo adicionado à lista de desejos!');
+            mostrarSucesso('Jogo adicionado à lista de desejos!');
             return true;
         } else {
             const data = await response.json();
-            showError(data.message || 'Erro ao adicionar à lista de desejos.');
+            mostrarErro(data.message || 'Erro ao adicionar à lista de desejos.');
             return false;
         }
     } catch (error) {
         console.error('Erro ao adicionar à lista de desejos:', error);
-        showError('Erro de conexão. Tente novamente.');
-        return false;
-    }
-}
-
-// Remover do carrinho
-async function removeFromCart(itemId) {
-    if (!requireAuth()) return false;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/carrinho/${itemId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        
-        if (response.ok) {
-            await loadCart();
-            showSuccess('Item removido do carrinho!');
-            return true;
-        } else {
-            const data = await response.json();
-            showError(data.message || 'Erro ao remover do carrinho.');
-            return false;
-        }
-    } catch (error) {
-        console.error('Erro ao remover do carrinho:', error);
-        showError('Erro de conexão. Tente novamente.');
-        return false;
-    }
-}
-
-// Remover da lista de desejos
-async function removeFromWishlist(gameId) {
-    if (!requireAuth()) return false;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/lista-desejo/${gameId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${getAuthToken()}`
-            }
-        });
-        
-        if (response.ok) {
-            await loadWishlist();
-            showSuccess('Jogo removido da lista de desejos!');
-            return true;
-        } else {
-            const data = await response.json();
-            showError(data.message || 'Erro ao remover da lista de desejos.');
-            return false;
-        }
-    } catch (error) {
-        console.error('Erro ao remover da lista de desejos:', error);
-        showError('Erro de conexão. Tente novamente.');
-        return false;
-    }
-}
-
-// Atualizar quantidade no carrinho
-async function updateCartQuantity(itemId, quantity) {
-    if (!requireAuth()) return false;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/carrinho/${itemId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({
-                quantidade: quantity
-            })
-        });
-        
-        if (response.ok) {
-            await loadCart();
-            return true;
-        } else {
-            const data = await response.json();
-            showError(data.message || 'Erro ao atualizar quantidade.');
-            return false;
-        }
-    } catch (error) {
-        console.error('Erro ao atualizar quantidade:', error);
-        showError('Erro de conexão. Tente novamente.');
+        mostrarErro('Erro de conexão. Tente novamente.');
         return false;
     }
 }
@@ -399,55 +317,6 @@ function isInWishlist(gameId) {
     return wishlist.some(item => item.jogoId === gameId);
 }
 
-// Obter avaliações de um jogo
-async function getGameReviews(gameId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/avaliacao/jogo/${gameId}`);
-        
-        if (response.ok) {
-            return await response.json();
-        } else {
-            throw new Error('Erro ao carregar avaliações');
-        }
-    } catch (error) {
-        console.error('Erro ao carregar avaliações:', error);
-        return [];
-    }
-}
-
-// Adicionar avaliação
-async function addGameReview(gameId, rating, comment) {
-    if (!requireAuth()) return false;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/avaliacao`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAuthToken()}`
-            },
-            body: JSON.stringify({
-                jogoId: gameId,
-                nota: rating,
-                comentario: comment
-            })
-        });
-        
-        if (response.ok) {
-            showSuccess('Avaliação adicionada com sucesso!');
-            return true;
-        } else {
-            const data = await response.json();
-            showError(data.message || 'Erro ao adicionar avaliação.');
-            return false;
-        }
-    } catch (error) {
-        console.error('Erro ao adicionar avaliação:', error);
-        showError('Erro de conexão. Tente novamente.');
-        return false;
-    }
-}
-
 // Função debounce para busca
 function debounce(func, wait) {
     let timeout;
@@ -464,10 +333,5 @@ function debounce(func, wait) {
 // Exportar funções para uso global
 window.addToCart = addToCart;
 window.addToWishlist = addToWishlist;
-window.removeFromCart = removeFromCart;
-window.removeFromWishlist = removeFromWishlist;
-window.updateCartQuantity = updateCartQuantity;
-window.getGameReviews = getGameReviews;
-window.addGameReview = addGameReview;
 window.isInCart = isInCart;
 window.isInWishlist = isInWishlist;
