@@ -145,7 +145,7 @@ function obterJogosRecomendados() {
         .slice(0, 3);
 }
 
-function mostrarDetalhesJogo(jogo) {
+async function mostrarDetalhesJogo(jogo) {
     const modal = document.getElementById('modalJogo');
     const imagemJogo = document.getElementById('imagemJogo');
     const tituloJogo = document.getElementById('tituloJogo');
@@ -165,7 +165,22 @@ if (jogo.foto) {
 
     tituloJogo.textContent = jogo.nome;
     descricaoJogo.textContent = jogo.descricao;
-    categoriaJogo.textContent = `Categoria: ${jogo.fkCategoria}`;
+    // Determine a categoria a exibir: se for um id numérico, buscar o nome na API
+    try {
+        let displayCategoria = jogo.categoria || jogo.fkCategoria || jogo.fk_categoria || 'N/A';
+        // se for número, buscar nome via API
+        if (displayCategoria && !isNaN(Number(displayCategoria))) {
+            const resp = await fetch(`${URL_BASE_API}/categorias/${displayCategoria}`);
+            if (resp.ok) {
+                const cat = await resp.json();
+                displayCategoria = cat.nome || displayCategoria;
+            }
+        }
+        categoriaJogo.textContent = `Categoria: ${displayCategoria}`;
+    } catch (err) {
+        console.warn('Não foi possível resolver o nome da categoria:', err);
+        categoriaJogo.textContent = `Categoria: ${jogo.fkCategoria}`;
+    }
     precoJogo.textContent = `R$ ${jogo.preco.toFixed(2)}`;
     anoJogo.textContent = `Ano: ${jogo.ano}`;
 
@@ -219,7 +234,7 @@ function setImageWithFallback(imgEl, gameName, options = {}) {
                 imgEl.style.width = '100%';
             }
         } else {
-            // Fallback visual: substitui IMG por placeholder gradiente
+            // Fallback visual: substitui a IMG por um espaço reservado em gradiente
             const container = imgEl.parentElement;
             if (container) {
                 const ph = createGradientPlaceholder(gameName, container.clientWidth, height || 200);
@@ -530,8 +545,8 @@ window.checkAuthStatus = async function() {
             });
             if (response.ok) {
                 const userData = await response.json();
-                // Persist the authenticated user in the global variable so other modules (games.js, etc.)
-                // can check login state using the shared `usuarioAtual` variable.
+                // Persiste o usuário autenticado na variável global para que outros módulos (games.js, etc.)
+                // possam checar o estado de login usando a variável compartilhada `usuarioAtual`.
                 try { usuarioAtual = userData; } catch (e) { window.usuarioAtual = userData; }
                 updateUIForLoggedUser(userData);
             } else {

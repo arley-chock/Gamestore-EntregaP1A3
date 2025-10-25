@@ -166,8 +166,8 @@ async function loadCart() {
 
         const cartData = await response.json();
 
-        // The backend returns { carrinho: { ... } } for the active cart route.
-        const cartObj = cartData.carrinho || cartData;
+    // O backend retorna { carrinho: { ... } } para a rota do carrinho ativo.
+    const cartObj = cartData.carrinho || cartData;
         const itens = (cartObj && cartObj.itens) ? cartObj.itens : [];
 
         // Update profile cart count if present

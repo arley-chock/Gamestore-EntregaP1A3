@@ -115,7 +115,7 @@ async function handleRegister(event) {
         const data = await response.json();
 
         if (response.ok) {
-            // Backend returns created user id or message; token may or may not be returned.
+            // O backend retorna o id do usuário criado ou uma mensagem; o token pode ou não ser retornado.
             if (data.token) {
                 localStorage.setItem('authToken', data.token);
                 if (typeof checkAuthStatus === 'function') await checkAuthStatus();

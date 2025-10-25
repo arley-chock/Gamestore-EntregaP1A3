@@ -16,7 +16,7 @@ function checkAuth() {
 async function loadCart() {
     try {
         const token = localStorage.getItem('authToken');
-        // request the active cart for the authenticated user
+    // solicita o carrinho ativo do usuário autenticado
         const response = await fetch(`${API_BASE_URL}/carrinho/ativo`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -29,8 +29,8 @@ async function loadCart() {
 
         const payload = await response.json();
 
-        // backend may return { carrinho: { ... } } or message when empty
-        const cartObj = payload.carrinho || payload;
+    // o backend pode retornar { carrinho: { ... } } ou uma mensagem quando estiver vazio
+    const cartObj = payload.carrinho || payload;
 
         if (!cartObj || !cartObj.itens || cartObj.itens.length === 0) {
             showEmptyCart();
@@ -145,14 +145,14 @@ async function processPayment(event) {
 
     try {
         const token = localStorage.getItem('authToken');
-        // Call the backend checkout endpoint which finalizes the active cart and generates activation keys
+    // Chama o endpoint de checkout do backend que finaliza o carrinho ativo e gera chaves de ativação
         const response = await fetch(`${API_BASE_URL}/vendas/checkout`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            // backend derives the active cart from the authenticated user, body is optional
+            // o backend determina o carrinho ativo a partir do usuário autenticado; o corpo da requisição é opcional
             body: JSON.stringify({ cartId: cartData && cartData.id })
         });
 

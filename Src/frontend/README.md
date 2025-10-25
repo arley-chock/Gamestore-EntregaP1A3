@@ -92,8 +92,8 @@ frontend/
 
 ### Instalação
 1. Clone o repositório
-2. Abra o arquivo `index.html` em um servidor web start index.html
-3. Certifique-se de que o backend está rodando npm start dento da pasta Src
+2. Abra o arquivo `index.html` em um servidor web (por exemplo: Live Server) ou abra-o diretamente no navegador
+3. Certifique-se de que o backend está rodando: execute `npm start` dentro da pasta `Src`
 
 ### Configuração da API
 Edite o arquivo `js/main.js` e ajuste a URL da API:
@@ -129,7 +129,7 @@ O frontend é totalmente responsivo com breakpoints:
 
 ## 🐛 Problemas Conhecidos
 
-1. **Imagens**: Placeholder images não implementadas
+1. **Imagens**: Imagens de espaço reservado (placeholders) não implementadas
 2. **Notificações**: Sistema de toast não implementado
 3. **Loading**: Estados de loading básicos
 4. **Erros**: Tratamento de erro básico com alerts
