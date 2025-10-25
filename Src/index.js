@@ -11,6 +11,9 @@ if (!fs.existsSync(envPath)) {
   process.exit(1);
 }
 
+// Carrega variáveis de ambiente do arquivo .env (se presente)
+require('dotenv').config({ path: envPath });
+
 const app = express();
 const APP_PORT = process.env.APP_PORT || 3000;
 

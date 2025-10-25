@@ -1,5 +1,5 @@
 // Autenticação simplificada - usa funções do main.js
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+if (typeof API_BASE_URL === 'undefined') { var API_BASE_URL = 'http://localhost:3000/api/v1'; }
 
 document.addEventListener('DOMContentLoaded', function() {
     setupAuthForms();
@@ -48,12 +48,12 @@ async function handleLogin(event) {
         if (response.ok) {
             // Login bem-sucedido
             localStorage.setItem('authToken', data.token);
-            usuarioAtual = data.usuario;
+            // usuarioAtual will be populated by checkAuthStatus() which fetches /perfil
             
             // Fecha o modal e atualiza o cabeçalho
             document.getElementById('modalAutenticacao').style.display = 'none';
             if (typeof checkAuthStatus === 'function') {
-                checkAuthStatus();
+                await checkAuthStatus();
             }
             
             mostrarSucesso('Login realizado com sucesso!');
@@ -115,9 +115,11 @@ async function handleRegister(event) {
         const data = await response.json();
 
         if (response.ok) {
-            localStorage.setItem('authToken', data.token);
-            usuarioAtual = data.usuario;
-            atualizarInterfaceUsuario();
+            // Backend returns created user id or message; token may or may not be returned.
+            if (data.token) {
+                localStorage.setItem('authToken', data.token);
+                if (typeof checkAuthStatus === 'function') await checkAuthStatus();
+            }
             fecharModalAutenticacao();
             limparFormularios();
             mostrarSucesso('Conta criada com sucesso!');

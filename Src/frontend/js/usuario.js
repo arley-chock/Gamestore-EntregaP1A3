@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+if (typeof API_BASE_URL === 'undefined') { var API_BASE_URL = 'http://localhost:3000/api/v1'; }
 let currentUser = null;
 
 // Carregar dados do perfil ao iniciar
@@ -68,16 +68,28 @@ async function loadLibrary() {
 
         const library = await response.json();
         const libraryGrid = document.getElementById('libraryGrid');
-        
-        libraryGrid.innerHTML = library.map(game => `
+
+        // library pode trazer DTOs (com { chaveAtivacao, jogo }) ou diretamente objetos jogo
+        libraryGrid.innerHTML = library.map(item => {
+            const jogo = item.jogo || item;
+            const chave = item.chaveAtivacao || item.chave_ativacao || '';
+            const title = jogo.nome || 'Jogo';
+            const first = title.charAt(0) || 'J';
+            const id = jogo.id || jogo.ID || 0;
+
+            return `
             <div class="game-card">
-                <div class="game-image">${game.nome.charAt(0)}</div>
+                <div class="game-image">${first}</div>
                 <div class="game-info">
-                    <h3 class="game-title">${game.nome}</h3>
-                    <p class="game-key">KEY: ${game.chaveAtivacao}</p>
+                    <h3 class="game-title">${title}</h3>
+                    <p class="game-key">KEY: ${chave}</p>
+                    <div class="game-actions">
+                        <button class="btn-primary" onclick="addToCart(${id})">Adicionar ao Carrinho</button>
+                    </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Atualizar estatística
         document.getElementById('gamesOwned').textContent = library.length;
@@ -101,16 +113,27 @@ async function loadWishlist() {
 
         const wishlist = await response.json();
         const wishlistGrid = document.getElementById('wishlistGrid');
-        
-        wishlistGrid.innerHTML = wishlist.map(game => `
+
+        wishlistGrid.innerHTML = wishlist.map(item => {
+            const jogo = item.jogo || item;
+            const title = jogo.nome || 'Jogo';
+            const first = title.charAt(0) || 'J';
+            const id = jogo.id || jogo.ID || 0;
+            const preco = jogo.preco ? jogo.preco.toFixed(2) : '0.00';
+
+            return `
             <div class="game-card">
-                <div class="game-image">${game.nome.charAt(0)}</div>
+                <div class="game-image">${first}</div>
                 <div class="game-info">
-                    <h3 class="game-title">${game.nome}</h3>
-                    <p class="game-key">R$ ${game.preco.toFixed(2)}</p>
+                    <h3 class="game-title">${title}</h3>
+                    <p class="game-key">R$ ${preco}</p>
+                    <div class="game-actions">
+                        <button class="btn-primary" onclick="addToCart(${id})">Adicionar ao Carrinho</button>
+                    </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         // Atualizar estatística
         document.getElementById('wishlistCount').textContent = wishlist.length;
@@ -162,7 +185,7 @@ async function saveConfig(event) {
         try {
             const token = localStorage.getItem('authToken');
             const response = await fetch(`${API_BASE_URL}/perfil/senha`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -189,9 +212,17 @@ async function saveConfig(event) {
 function handleAuth() {
     const token = localStorage.getItem('authToken');
     if (token) {
+        // se já está logado, sair
         localStorage.removeItem('authToken');
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
     } else {
+        // ir para a página de autenticação (mesma pasta pages)
         window.location.href = 'auth.html';
     }
+}
+
+// Função de logout usada pelo botão da navbar
+function logout() {
+    localStorage.removeItem('authToken');
+    window.location.href = '../index.html';
 }

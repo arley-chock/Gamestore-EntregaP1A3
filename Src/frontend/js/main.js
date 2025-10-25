@@ -515,14 +515,21 @@ window.checkAuthStatus = async function() {
             });
             if (response.ok) {
                 const userData = await response.json();
+                // Persist the authenticated user in the global variable so other modules (games.js, etc.)
+                // can check login state using the shared `usuarioAtual` variable.
+                try { usuarioAtual = userData; } catch (e) { window.usuarioAtual = userData; }
                 updateUIForLoggedUser(userData);
             } else {
+                // If token is invalid/expired, clear local state
+                try { usuarioAtual = null; } catch (e) { window.usuarioAtual = null; }
                 updateUIForGuest();
             }
         } catch (error) {
+            try { usuarioAtual = null; } catch (e) { window.usuarioAtual = null; }
             updateUIForGuest();
         }
     } else {
+        try { usuarioAtual = null; } catch (e) { window.usuarioAtual = null; }
         updateUIForGuest();
     }
 }
