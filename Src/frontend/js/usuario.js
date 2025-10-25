@@ -37,10 +37,11 @@ async function loadUserProfile() {
         }
 
         currentUser = await response.json();
+        await loadCart(); // Load cart after profile loads
         
-    // Atualizar informações do perfil
-    document.getElementById('userName').textContent = currentUser.nome;
-    document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0);
+        // Atualizar informações do perfil
+        document.getElementById('userName').textContent = currentUser.nome;
+        document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0);
     document.getElementById('userEmail').textContent = currentUser.email;
     // Atualizar header
     const userNameHeader = document.getElementById('userNameHeader');
@@ -149,6 +150,100 @@ async function loadWishlist() {
     }
 }
 
+async function loadCart() {
+    try {
+        const token = localStorage.getItem('authToken');
+        // Use the 'ativo' route to get the active cart for the user
+        const response = await fetch(`${API_BASE_URL}/carrinho/ativo`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Falha ao carregar carrinho');
+        }
+
+        const cartData = await response.json();
+
+        // The backend returns { carrinho: { ... } } for the active cart route.
+        const cartObj = cartData.carrinho || cartData;
+        const itens = (cartObj && cartObj.itens) ? cartObj.itens : [];
+
+        // Update profile cart count if present
+        const profileCartCount = document.getElementById('profileCartCount');
+        if (profileCartCount) {
+            profileCartCount.textContent = itens.length;
+        }
+
+        // If we're on a cart UI (elements present), render full cart
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        if (!cartItems || !cartTotal) {
+            return; // Not on cart page, no need to render detailed view
+        }
+
+        let total = 0;
+        if (itens.length > 0) {
+            const itemsHTML = await Promise.all(itens.map(async (item) => {
+                // item may use fk_jogo or fkJogo depending on DAO
+                const jogoId = item.fkJogo || item.fk_jogo || item.fk_jogo_id || item.fk_jogo_id;
+                const gameDetails = await fetchGameDetails(jogoId);
+                total += (gameDetails.preco || 0);
+                return `
+                    <div class="cart-item">
+                        <div class="item-details">
+                            <h3>${gameDetails.nome}</h3>
+                            <p>R$ ${Number(gameDetails.preco || 0).toFixed(2)}</p>
+                        </div>
+                        <button onclick="removeFromCart(${jogoId})" class="btn-remove">Remover</button>
+                    </div>
+                `;
+            }));
+            cartItems.innerHTML = itemsHTML.join('');
+            cartTotal.textContent = `R$ ${total.toFixed(2)}`;
+        } else {
+            cartItems.innerHTML = '<p>Seu carrinho está vazio</p>';
+            cartTotal.textContent = 'R$ 0,00';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar carrinho:', error);
+    }
+}
+
+async function fetchGameDetails(gameId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/jogos/${gameId}`);
+        if (!response.ok) throw new Error('Falha ao carregar detalhes do jogo');
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar detalhes do jogo:', error);
+        return { nome: 'Jogo não encontrado', preco: 0 };
+    }
+}
+
+async function removeFromCart(gameId) {
+    try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/carrinho/${gameId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Falha ao remover item do carrinho');
+        await loadCart(); // Reload cart after removing item
+    } catch (error) {
+        console.error('Erro ao remover item do carrinho:', error);
+        alert('Erro ao remover item do carrinho');
+    }
+}
+
+function goToCheckout() {
+    window.location.href = 'checkout.html';
+}
+
 async function loadPurchaseHistory() {
     try {
         const token = localStorage.getItem('authToken');
@@ -225,6 +320,34 @@ function handleAuth() {
     } else {
         // ir para a página de autenticação (mesma pasta pages)
         window.location.href = 'auth.html';
+    }
+}
+
+async function addToCart(gameId) {
+    try {
+        const token = localStorage.getItem('authToken');
+        // Use the /carrinho/add endpoint and send the expected field 'jogoId'
+        const response = await fetch(`${API_BASE_URL}/carrinho/add`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                jogoId: gameId,
+                quantidade: 1
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Falha ao adicionar ao carrinho');
+        }
+
+        await loadCart(); // Reload cart after adding item
+        alert('Jogo adicionado ao carrinho!');
+    } catch (error) {
+        console.error('Erro ao adicionar ao carrinho:', error);
+        alert('Erro ao adicionar ao carrinho');
     }
 }
 

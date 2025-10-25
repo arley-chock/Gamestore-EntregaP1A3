@@ -16,7 +16,8 @@ function checkAuth() {
 async function loadCart() {
     try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/carrinho`, {
+        // request the active cart for the authenticated user
+        const response = await fetch(`${API_BASE_URL}/carrinho/ativo`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -26,12 +27,18 @@ async function loadCart() {
             throw new Error('Falha ao carregar o carrinho');
         }
 
-        cartData = await response.json();
+        const payload = await response.json();
 
-        if (!cartData.itens || cartData.itens.length === 0) {
+        // backend may return { carrinho: { ... } } or message when empty
+        const cartObj = payload.carrinho || payload;
+
+        if (!cartObj || !cartObj.itens || cartObj.itens.length === 0) {
             showEmptyCart();
             return;
         }
+
+        // normalize cartData to the cart object (with id, itens...)
+        cartData = cartObj;
 
         await renderCart();
         await updateSummary();
@@ -45,7 +52,8 @@ async function renderCart() {
     const container = document.getElementById('cartItems');
     
     const itemsHTML = await Promise.all(cartData.itens.map(async (item) => {
-        const game = await fetchGameDetails(item.fkJogo);
+        const jogoId = item.fkJogo || item.fk_jogo || item.fk_jogo_id || item.fk_jogoId || item.jogoId || item.jogo_id;
+        const game = await fetchGameDetails(jogoId);
         return `
             <div class="cart-item">
                 <div class="item-image">
@@ -56,7 +64,7 @@ async function renderCart() {
                     <p class="item-info">${game.ano} | ${game.fkCategoria}</p>
                 </div>
                 <div class="item-price">R$ ${game.preco.toFixed(2)}</div>
-                <button class="btn-remove" onclick="removeItem(${item.fkJogo})">Remover</button>
+                <button class="btn-remove" onclick="removeItem(${jogoId})">Remover</button>
             </div>
         `;
     }));
@@ -80,8 +88,9 @@ async function updateSummary() {
     let subtotal = 0;
 
     for (const item of cartData.itens) {
-        const game = await fetchGameDetails(item.fkJogo);
-        subtotal += game.preco;
+        const jogoId = item.fkJogo || item.fk_jogo || item.fk_jogo_id || item.fk_jogoId || item.jogoId || item.jogo_id;
+        const game = await fetchGameDetails(jogoId);
+        subtotal += (game.preco || 0);
     }
 
     const discount = 0;
@@ -111,6 +120,22 @@ async function removeItem(gameId) {
     }
 }
 
+function generateSerialKey() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const segments = 4;
+    const segmentLength = 4;
+    let key = '';
+    
+    for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < segmentLength; j++) {
+            key += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        if (i < segments - 1) key += '-';
+    }
+    
+    return key;
+}
+
 async function processPayment(event) {
     event.preventDefault();
 
@@ -120,20 +145,21 @@ async function processPayment(event) {
 
     try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/vendas`, {
+        // Call the backend checkout endpoint which finalizes the active cart and generates activation keys
+        const response = await fetch(`${API_BASE_URL}/vendas/checkout`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                cartId: cartData.id
-            })
+            // backend derives the active cart from the authenticated user, body is optional
+            body: JSON.stringify({ cartId: cartData && cartData.id })
         });
 
         if (response.ok) {
-            alert('Pagamento processado com sucesso!');
-            window.location.href = 'perfil-usuario.html';
+            alert('Pagamento processado com sucesso! As chaves de ativação estarão disponíveis no seu perfil.');
+            // redirect to the user profile page (same folder)
+            window.location.href = 'usuario.html';
         } else {
             throw new Error('Falha ao processar pagamento');
         }
