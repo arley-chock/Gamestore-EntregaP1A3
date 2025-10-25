@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - GameStore Digital</title>
+    <link rel="stylesheet" href="../css/usuario.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <div class="alien-icon"></div>
+                </div>
+            </div>
+            <nav class="nav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="nav-link">Início</a></li>
+                    <li><a href="classicos.html" class="nav-link">Clássicos</a></li>
+                    <li><a href="perfil-usuario.html" class="nav-link active">Perfil</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <button class="btn-login" onclick="handleAuth()">Entrar/Registrar</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <button class="breadcrumb-btn">INÍCIO > PERFIL DE USUÁRIO</button>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-info">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-details">
+                    <h1 id="userName">Usuário</h1>
+                    <p id="userEmail" style="color: #666;">usuario@email.com</p>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="gamesOwned">0</div>
+                            <div class="stat-label">Jogos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="wishlistCount">0</div>
+                            <div class="stat-label">Lista de Desejos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="purchaseCount">0</div>
+                            <div class="stat-label">Compras</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-sections">
+            <div class="sections-nav">
+                <button class="section-btn active" onclick="switchSection('library')">Biblioteca</button>
+                <button class="section-btn" onclick="switchSection('wishlist')">Lista de Desejos</button>
+                <button class="section-btn" onclick="switchSection('history')">Histórico</button>
+                <button class="section-btn" onclick="switchSection('config')">Configurações</button>
+            </div>
+
+            <div class="section-content active" id="library">
+                <div class="library-grid" id="libraryGrid">
+                    <div class="game-card">
+                        <div class="game-image">C</div>
+                        <div class="game-info">
+                            <h3 class="game-title">Carregando...</h3>
+                            <p class="game-key">KEY: ...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-content" id="wishlist">
+                <div class="library-grid" id="wishlistGrid">
+                    <div class="game-card">
+                        <div class="game-image">C</div>
+                        <div class="game-info">
+                            <h3 class="game-title">Carregando...</h3>
+                            <p class="game-key">R$ 0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-content" id="history">
+                <div class="purchase-history" id="purchaseHistory">
+                    <div class="purchase-item">
+                        <div class="purchase-info">
+                            <h3>Carregando...</h3>
+                            <p class="purchase-details">Data: --/--/----</p>
+                        </div>
+                        <div class="purchase-total">R$ 0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-content" id="config">
+                <form class="config-form" id="configForm" onsubmit="saveConfig(event)">
+                    <div class="form-group">
+                        <label class="form-label" for="currentPassword">Senha Atual</label>
+                        <input type="password" id="currentPassword" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="newPassword">Nova Senha</label>
+                        <input type="password" id="newPassword" class="form-input" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Atualizar Senha</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="#" class="footer-link">Sobre</a>
+                <a href="#" class="footer-link">Suporte</a>
+                <a href="#" class="footer-link">Termos</a>
+                <a href="#" class="footer-link">Privacidade</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/usuario.js"></script>
+</body>
+</html>

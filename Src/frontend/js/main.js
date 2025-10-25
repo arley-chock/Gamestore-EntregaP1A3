@@ -503,3 +503,55 @@ function alternarAba(nomeAba) {
         abas[1].classList.add('ativo');
     }
 }
+
+window.checkAuthStatus = async function() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        try {
+            const response = await fetch('http://localhost:3000/api/v1/perfil', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const userData = await response.json();
+                updateUIForLoggedUser(userData);
+            } else {
+                updateUIForGuest();
+            }
+        } catch (error) {
+            updateUIForGuest();
+        }
+    } else {
+        updateUIForGuest();
+    }
+}
+
+function updateUIForLoggedUser(userData) {
+    const userActions = document.getElementById('userActions');
+    if (userActions) {
+        userActions.innerHTML = `
+            <span class="user-greeting">Olá, ${userData.nome}</span>
+            <a href="pages/usuario.html" class="botao-entrar">Meu Perfil</a>
+            <button class="botao-entrar" onclick="handleLogout()">Sair</button>
+        `;
+    }
+}
+
+function updateUIForGuest() {
+    const userActions = document.getElementById('userActions');
+    if (userActions) {
+        userActions.innerHTML = `
+            <button class="botao-entrar" onclick="alternarModalAutenticacao()">Entrar/Registrar</button>
+        `;
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem('authToken');
+    window.location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    window.checkAuthStatus();
+});

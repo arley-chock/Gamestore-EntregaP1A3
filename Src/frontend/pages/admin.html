@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - GameStore Digital</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <div class="alien-icon"></div>
+                </div>
+                <span class="admin-badge">ADMIN</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="breadcrumb">
+        <button class="breadcrumb-btn">ADMINISTRAÇÃO > GERENCIAMENTO</button>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Painel de Administração</h1>
+            <p style="color: #666; margin-top: 10px;">
+                Gerencie jogos, empresas e monitore as vendas da plataforma
+            </p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalGames">0</div>
+                <div class="stat-label">Jogos Cadastrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalCompanies">0</div>
+                <div class="stat-label">Empresas Parceiras</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalSales">0</div>
+                <div class="stat-label">Vendas Realizadas</div>
+            </div>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('games')">Gerenciar Jogos</button>
+            <button class="tab-btn" onclick="switchTab('add')">Adicionar Jogo</button>
+            <button class="tab-btn" onclick="switchTab('companies')">Empresas</button>
+        </div>
+
+        <div class="tab-content active" id="games">
+            <h2 style="margin-bottom: 20px; color: #2F2F2F;">LISTA DE JOGOS</h2>
+            
+            <div class="search-bar">
+                <input type="text" id="searchGames" class="search-input" placeholder="Buscar jogos..." oninput="filterGames()">
+            </div>
+
+            <table class="games-table" id="gamesTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Ano</th>
+                        <th>Preço</th>
+                        <th>Categoria</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="gamesTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Carregando jogos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tab-content" id="add">
+            <h2 style="margin-bottom: 30px; color: #2F2F2F;">ADICIONAR NOVO JOGO</h2>
+            
+            <form id="addGameForm" onsubmit="addGame(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="gameName">Nome do Jogo</label>
+                        <input type="text" id="gameName" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gameYear">Ano</label>
+                        <input type="number" id="gameYear" class="form-input" required min="1970" max="2025">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gamePrice">Preço</label>
+                        <input type="number" id="gamePrice" class="form-input" required min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gameCategory">Categoria</label>
+                        <select id="gameCategory" class="form-select category-select" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="gameCompany">Empresa</label>
+                        <select id="gameCompany" class="form-select company-select" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="gameDescription">Descrição</label>
+                        <textarea id="gameDescription" class="form-textarea" required></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Adicionar Jogo</button>
+            </form>
+        </div>
+
+        <div class="tab-content" id="companies">
+            <h2 style="margin-bottom: 30px; color: #2F2F2F;">GERENCIAR EMPRESAS</h2>
+            
+            <div class="form-grid" style="max-width: 600px;">
+                <div class="form-group">
+                    <label class="form-label" for="companyName">Nome da Empresa</label>
+                    <input type="text" id="companyName" class="form-input">
+                </div>
+                <div class="form-group" style="justify-content: flex-end;">
+                    <button class="btn-primary" onclick="addCompany()">Adicionar Empresa</button>
+                </div>
+            </div>
+
+            <table class="games-table" style="margin-top: 30px;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="companiesTableBody">
+                    <tr>
+                        <td colspan="3" style="text-align: center;">Carregando empresas...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2 style="margin-bottom: 30px; color: #2F2F2F;">EDITAR JOGO</h2>
+            
+            <form id="editGameForm" onsubmit="updateGame(event)">
+                <input type="hidden" id="editGameId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="editGameName">Nome do Jogo</label>
+                        <input type="text" id="editGameName" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editGameYear">Ano</label>
+                        <input type="number" id="editGameYear" class="form-input" required min="1970" max="2025">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editGamePrice">Preço</label>
+                        <input type="number" id="editGamePrice" class="form-input" required min="0" step="0.01">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editGameCategory">Categoria</label>
+                        <select id="editGameCategory" class="form-select category-select" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editGameCompany">Empresa</label>
+                        <select id="editGameCompany" class="form-select company-select" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="editGameDescription">Descrição</label>
+                        <textarea id="editGameDescription" class="form-textarea" required></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>

@@ -50,9 +50,12 @@ async function handleLogin(event) {
             localStorage.setItem('authToken', data.token);
             usuarioAtual = data.usuario;
             
-            atualizarInterfaceUsuario();
-            fecharModalAutenticacao();
-            limparFormularios();
+            // Fecha o modal e atualiza o cabeçalho
+            document.getElementById('modalAutenticacao').style.display = 'none';
+            if (typeof checkAuthStatus === 'function') {
+                checkAuthStatus();
+            }
+            
             mostrarSucesso('Login realizado com sucesso!');
             
         } else {
