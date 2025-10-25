@@ -25,7 +25,9 @@
                 </ul>
             </nav>
             <div class="acoes-usuario" id="userActions">
-                <button class="botao-entrar" onclick="alternarModalAutenticacao()">Entrar/Registrar</button>
+                <span id="userGreeting">Olá, <span id="userName">Cliente</span></span>
+                <button id="btnPerfil" class="botao-perfil" onclick="window.location.href='pages/usuario.html'" style="display:none;"><u>MEU PERFIL</u></button>
+                <button id="btnSair" class="botao-sair" onclick="sair()" style="display:none;">SAIR</button>
             </div>
         </div>
     </header>
@@ -116,7 +118,7 @@
                     <input type="email" id="emailEntrar" placeholder="E-mail" required>
                 </div>
                 <div class="grupo-formulario">
-                    <input type="password" id="senhaEntrar" placeholder="Senha" required>
+                    <input type="password" id="senhaEntrar" placeholder="Senha" required autocomplete="current-password">
                 </div>
                 <button type="submit" class="botao-enviar">Entrar</button>
             </form>
@@ -134,7 +136,7 @@
                     <input type="date" id="nascimentoRegistrar" required>
                 </div>
                 <div class="grupo-formulario">
-                    <input type="password" id="senhaRegistrar" placeholder="Senha" required>
+                    <input type="password" id="senhaRegistrar" placeholder="Senha" required autocomplete="new-password">
                 </div>
                 <button type="submit" class="botao-enviar">Registrar</button>
             </form>
@@ -159,8 +161,8 @@
                         <span id="anoJogo"></span>
                     </div>
                     <div class="acoes-jogo">
-                        <button class="botao-adicionar-carrinho">Adicionar ao Carrinho</button>
-                        <button class="botao-adicionar-lista-desejos">Lista de Desejos</button>
+                        <button type="button" class="botao-adicionar-carrinho">Adicionar ao Carrinho</button>
+                        <button type="button" class="botao-adicionar-lista-desejos">Lista de Desejos</button>
                     </div>
                 </div>
             </div>

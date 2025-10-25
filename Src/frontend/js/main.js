@@ -301,6 +301,7 @@ function configurarEventListeners() {
 }
 
 async function adicionarAoCarrinho(event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
     if (!usuarioAtual) {
         mostrarErro('Você precisa estar logado para adicionar itens ao carrinho.');
         alternarModalAutenticacao();
@@ -313,7 +314,7 @@ async function adicionarAoCarrinho(event) {
         
         if (!jogo) return;
         
-        const response = await fetch(`${URL_BASE_API}/carrinho`, {
+            const response = await fetch(`${URL_BASE_API}/carrinho/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -328,16 +329,20 @@ async function adicionarAoCarrinho(event) {
         if (response.ok) {
             mostrarSucesso('Jogo adicionado ao carrinho!');
         } else {
-            throw new Error('Erro ao adicionar ao carrinho');
+                // try to read error message from server
+                let msg = 'Erro ao adicionar ao carrinho';
+                try { const data = await response.json(); if (data && data.message) msg = data.message; } catch (e) {}
+                throw new Error(msg);
         }
         
     } catch (error) {
         console.error('Erro ao adicionar ao carrinho:', error);
-        mostrarErro('Erro ao adicionar ao carrinho. Tente novamente.');
+        mostrarErro(error.message || 'Erro ao adicionar ao carrinho. Tente novamente.');
     }
 }
 
 async function adicionarAListaDesejos(event) {
+    if (event && typeof event.preventDefault === 'function') event.preventDefault();
     if (!usuarioAtual) {
         mostrarErro('Você precisa estar logado para adicionar à lista de desejos.');
         alternarModalAutenticacao();
@@ -364,18 +369,20 @@ async function adicionarAListaDesejos(event) {
         if (response.ok) {
             mostrarSucesso('Jogo adicionado à lista de desejos!');
         } else {
-            throw new Error('Erro ao adicionar à lista de desejos');
+            let msg = 'Erro ao adicionar à lista de desejos';
+            try { const data = await response.json(); if (data && data.message) msg = data.message; } catch(e){}
+            throw new Error(msg);
         }
         
     } catch (error) {
         console.error('Erro ao adicionar à lista de desejos:', error);
-        mostrarErro('Erro ao adicionar à lista de desejos. Tente novamente.');
+        mostrarErro(error.message || 'Erro ao adicionar à lista de desejos. Tente novamente.');
     }
 }
 
 async function validarToken(token) {
     try {
-        const response = await fetch(`${URL_BASE_API}/profile`, {
+        const response = await fetch(`${URL_BASE_API}/perfil`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -394,13 +401,21 @@ async function validarToken(token) {
 }
 
 function atualizarInterfaceUsuario() {
-    const botaoEntrar = document.querySelector('.botao-entrar');
-    if (usuarioAtual) {
-        botaoEntrar.textContent = `${usuarioAtual.nome} (Sair)`;
-        botaoEntrar.onclick = sair;
+    const userNameSpan = document.getElementById('userName');
+    const btnPerfil = document.getElementById('btnPerfil');
+    const btnSair = document.getElementById('btnSair');
+    const userGreeting = document.getElementById('userGreeting');
+
+    if (usuarioAtual && usuarioAtual.nome) {
+        if (userNameSpan) userNameSpan.textContent = usuarioAtual.nome;
+        if (btnPerfil) btnPerfil.style.display = 'inline-block';
+        if (btnSair) btnSair.style.display = 'inline-block';
+        if (userGreeting) userGreeting.style.display = 'inline-block';
     } else {
-        botaoEntrar.textContent = 'Entrar/Registrar';
-        botaoEntrar.onclick = alternarModalAutenticacao;
+        if (userNameSpan) userNameSpan.textContent = 'Cliente';
+        if (btnPerfil) btnPerfil.style.display = 'none';
+        if (btnSair) btnSair.style.display = 'none';
+        if (userGreeting) userGreeting.style.display = 'inline-block';
     }
 }
 

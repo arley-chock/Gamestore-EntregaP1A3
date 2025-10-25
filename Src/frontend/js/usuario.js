@@ -38,10 +38,17 @@ async function loadUserProfile() {
 
         currentUser = await response.json();
         
-        // Atualizar informações do perfil
-        document.getElementById('userName').textContent = currentUser.nome;
-        document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0);
-        document.getElementById('userEmail').textContent = currentUser.email;
+    // Atualizar informações do perfil
+    document.getElementById('userName').textContent = currentUser.nome;
+    document.getElementById('userAvatar').textContent = currentUser.nome.charAt(0);
+    document.getElementById('userEmail').textContent = currentUser.email;
+    // Atualizar header
+    const userNameHeader = document.getElementById('userNameHeader');
+    const btnSairHeader = document.getElementById('btnSairHeader');
+    const userGreeting = document.getElementById('userGreeting');
+    if (userNameHeader) userNameHeader.textContent = currentUser.nome;
+    if (btnSairHeader) btnSairHeader.style.display = 'inline-block';
+    if (userGreeting) userGreeting.style.display = 'inline-block';
         
         // Carregar biblioteca, lista de desejos e histórico
         await loadLibrary();

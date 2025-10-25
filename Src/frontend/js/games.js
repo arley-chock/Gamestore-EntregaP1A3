@@ -228,7 +228,7 @@ async function addToCart(gameId, quantity = 1) {
     }
     
     try {
-        const response = await fetch(`${URL_BASE_API}/carrinho`, {
+        const response = await fetch(`${URL_BASE_API}/carrinho/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -281,8 +281,9 @@ async function addToWishlist(gameId) {
             mostrarSucesso('Jogo adicionado à lista de desejos!');
             return true;
         } else {
-            const data = await response.json();
-            mostrarErro(data.message || 'Erro ao adicionar à lista de desejos.');
+            let msg = 'Erro ao adicionar à lista de desejos.';
+            try { const data = await response.json(); if (data && data.message) msg = data.message; } catch(e){}
+            mostrarErro(msg);
             return false;
         }
     } catch (error) {
