@@ -33,6 +33,13 @@ app.use((req, res, next) => {
 // Realiza um parse do body para uma estrutura JSON
 app.use(express.json());
 
+// Servir arquivos estáticos do frontend
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'pages', 'admin.html'));
+});
+
 app.listen(APP_PORT, '0.0.0.0', () => {
   console.log(`API de vendas de jogos em execução na porta ${APP_PORT}.`);
   console.log(`Acesse a url http://localhost:${APP_PORT}`);

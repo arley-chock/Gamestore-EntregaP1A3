@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/AuthController');
 const authMiddleware = require('../middleware/authMiddleware');
+const adminMiddleware = require('../middleware/adminMiddleware');
 
 // Rota para registrar um novo usuário
 // POST /auth/register
@@ -12,5 +13,10 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 
 router.put('/change-password', [authMiddleware], authController.changePassword);
+
+// Rota para verificar se usuário é admin
+router.get('/check-admin', [authMiddleware, adminMiddleware], (req, res) => {
+    res.status(200).json({ message: 'Usuário é administrador.' });
+});
 
 module.exports = router;

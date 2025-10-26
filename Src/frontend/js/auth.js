@@ -3,7 +3,72 @@ if (typeof API_BASE_URL === 'undefined') { var API_BASE_URL = 'http://localhost:
 
 document.addEventListener('DOMContentLoaded', function() {
     setupAuthForms();
+    initializeAuth();
 });
+
+async function initializeAuth() {
+    const token = localStorage.getItem('authToken');
+    const btnPerfil = document.getElementById('btnPerfil');
+    const btnSair = document.getElementById('btnSair');
+    
+    if (!token) {
+        if (btnPerfil) btnPerfil.style.display = 'none';
+        if (btnSair) btnSair.style.display = 'none';
+        return;
+    }
+    
+    if (btnPerfil) btnPerfil.style.display = 'inline-block';
+    if (btnSair) btnSair.style.display = 'inline-block';
+    
+    try {
+        const adminResponse = await fetch(`${API_BASE_URL}/auth/check-admin`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (adminResponse.ok) {
+            const adminButton = document.getElementById('admin-button');
+            if (adminButton) {
+                adminButton.style.display = 'inline-flex';
+                const userName = document.getElementById('userName');
+                if (userName) userName.textContent = 'Admin';
+                console.log('Admin status verificado: É administrador');
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao verificar status de admin:', error);
+    }
+}
+
+// Verificar se o usuário é admin e mostrar/esconder o botão
+async function checkAdminStatus() {
+    const token = localStorage.getItem('authToken');
+    const adminButton = document.getElementById('admin-button');
+    
+    if (!token || !adminButton) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/check-admin`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            adminButton.style.display = 'inline-flex';
+            document.getElementById('userName').textContent = 'Admin';
+            adminButton.classList.add('visible');
+        } else {
+            adminButton.style.display = 'none';
+            adminButton.classList.remove('visible');
+        }
+    } catch (error) {
+        console.error('Erro ao verificar status de admin:', error);
+        adminButton.style.display = 'none';
+        adminButton.classList.remove('visible');
+    }
+}
 
 // Configurar formulários de autenticação
 function setupAuthForms() {
@@ -23,14 +88,27 @@ function setupAuthForms() {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const email = document.getElementById('emailEntrar').value;
-    const password = document.getElementById('senhaEntrar').value;
+    const emailInput = document.getElementById('emailEntrar');
+    const passwordInput = document.getElementById('senhaEntrar');
+    
+    if (!emailInput || !passwordInput) {
+        console.error('Elementos do formulário não encontrados');
+        return;
+    }
+
+    const email = emailInput.value;
+    const password = passwordInput.value;
     
     if (!email || !password) {
         mostrarErro('Por favor, preencha todos os campos.');
         return;
     }
-    
+
+    if (!isValidEmail(email)) {
+        mostrarErro('Por favor, insira um e-mail válido.');
+        return;
+    }
+
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
@@ -48,21 +126,51 @@ async function handleLogin(event) {
         if (response.ok) {
             // Login bem-sucedido
             localStorage.setItem('authToken', data.token);
-            // usuarioAtual will be populated by checkAuthStatus() which fetches /perfil
             
-            // Fecha o modal e atualiza o cabeçalho
-            document.getElementById('modalAutenticacao').style.display = 'none';
+            // Atualizar elementos da UI se existirem
+            const btnPerfil = document.getElementById('btnPerfil');
+            const btnSair = document.getElementById('btnSair');
+            const userName = document.getElementById('userName');
+            
+            if (btnPerfil) btnPerfil.style.display = 'inline-block';
+            if (btnSair) btnSair.style.display = 'inline-block';
+            
+            // Verificar se é admin
+            try {
+                const adminResponse = await fetch(`${API_BASE_URL}/auth/check-admin`, {
+                    headers: {
+                        'Authorization': `Bearer ${data.token}`
+                    }
+                });
+
+                if (adminResponse.ok) {
+                    const adminButton = document.getElementById('admin-button');
+                    if (adminButton) {
+                        adminButton.style.display = 'inline-flex';
+                        if (userName) userName.textContent = 'Admin';
+                    }
+                }
+            } catch (adminError) {
+                console.error('Erro ao verificar status de admin:', adminError);
+            }
+
+            // Fecha o modal e atualiza o status
+            const modalAutenticacao = document.getElementById('modalAutenticacao');
+            if (modalAutenticacao) modalAutenticacao.style.display = 'none';
+            
             if (typeof checkAuthStatus === 'function') {
                 await checkAuthStatus();
             }
             
             mostrarSucesso('Login realizado com sucesso!');
             
+            // Limpar campos do formulário
+            emailInput.value = '';
+            passwordInput.value = '';
         } else {
             // Erro no login
             mostrarErro(data.message || 'Erro ao fazer login. Verifique suas credenciais.');
         }
-        
     } catch (error) {
         console.error('Erro no login:', error);
         mostrarErro('Erro de conexão. Tente novamente.');
@@ -167,6 +275,15 @@ function requireAuth() {
     return true;
 }
 
+// Funções de feedback para o usuário
+function mostrarErro(mensagem) {
+    alert(mensagem); // Podemos melhorar isso depois com um componente de toast ou notificação
+}
+
+function mostrarSucesso(mensagem) {
+    alert(mensagem); // Podemos melhorar isso depois com um componente de toast ou notificação
+}
+
 // Funções de modal (usando as do main.js)
 function alternarModalAutenticacao() {
     const modal = document.getElementById('modalAutenticacao');
@@ -192,5 +309,27 @@ function alternarAba(nomeAba) {
         formularioRegistrar.classList.add('ativo');
         formularioEntrar.classList.remove('ativo');
         abas[1].classList.add('ativo');
+    }
+}
+
+// Função de logout
+function sair() {
+    // Limpar token de autenticação
+    localStorage.removeItem('authToken');
+    
+    // Atualizar UI
+    const btnPerfil = document.getElementById('btnPerfil');
+    const btnSair = document.getElementById('btnSair');
+    const adminButton = document.getElementById('admin-button');
+    const userName = document.getElementById('userName');
+    
+    if (btnPerfil) btnPerfil.style.display = 'none';
+    if (btnSair) btnSair.style.display = 'none';
+    if (adminButton) adminButton.style.display = 'none';
+    if (userName) userName.textContent = 'Cliente';
+    
+    // Redirecionar para a página inicial se não estiver nela
+    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+        window.location.href = '/';
     }
 }
