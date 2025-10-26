@@ -184,7 +184,64 @@ if (jogo.foto) {
     precoJogo.textContent = `R$ ${jogo.preco.toFixed(2)}`;
     anoJogo.textContent = `Ano: ${jogo.ano}`;
 
+    // Ativa hover que troca a imagem por GIF se disponível
+    try { setupModalGifHover(imagemJogo, jogo.nome); } catch (e) { /* não bloquear modal */ }
+
     modal.style.display = 'block';
+}
+
+// Hover: troca a imagem por GIF em images/Gifs/<slug>.gif quando disponível.
+function setupModalGifHover(imgEl, gameName) {
+    if (!imgEl || imgEl.tagName !== 'IMG') return;
+
+    // slug do nome do jogo
+    const slug = slugifyGameName(gameName);
+    if (!slug) return;
+
+    const gifPath = `images/Gifs/${slug}.gif`;
+
+    // Preload GIF para verificar existência
+    const probe = new Image();
+    probe.onload = () => {
+        // remove handlers antigos
+        if (imgEl._gifEnterHandler) imgEl.removeEventListener('mouseenter', imgEl._gifEnterHandler);
+        if (imgEl._gifLeaveHandler) imgEl.removeEventListener('mouseleave', imgEl._gifLeaveHandler);
+        // guarda src original (pode mudar dinamicamente)
+        const enter = () => {
+            try {
+                imgEl.dataset._originalSrc = imgEl.src || imgEl.getAttribute('src') || '';
+                imgEl.src = gifPath;
+                // manter object-fit
+                imgEl.style.objectFit = 'cover';
+            } catch (e) {}
+        };
+
+        const leave = () => {
+            try {
+                const orig = imgEl.dataset._originalSrc || '';
+                if (orig) imgEl.src = orig;
+            } catch (e) {}
+        };
+
+        imgEl._gifEnterHandler = enter;
+        imgEl._gifLeaveHandler = leave;
+
+        imgEl.addEventListener('mouseenter', enter);
+        imgEl.addEventListener('mouseleave', leave);
+
+        // touch: click alterna GIF/original
+        imgEl.addEventListener('click', function toggleOnClick(e) {
+            const current = imgEl.src || imgEl.getAttribute('src') || '';
+            if (current && current.includes('.gif')) {
+                leave();
+            } else {
+                enter();
+            }
+        });
+    };
+    // se o GIF não existir, ignora (probe.onerror)
+    probe.onerror = () => {};
+    probe.src = gifPath;
 }
 
 function fecharModalJogo() {
