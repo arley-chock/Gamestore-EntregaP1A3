@@ -318,7 +318,12 @@ function sair() {
     localStorage.removeItem('authToken');
     
     // Redirecionar para a página inicial
-    window.location.href = '/index.html';
+    // Redirecionamento relativo robusto:
+    // - se estivermos em uma página dentro de `pages/` (ex.: pages/usuario.html),
+    //   precisamos subir um nível para voltar para `index.html` => '../index.html'
+    // - caso contrário, usar 'index.html' (recarrega a página inicial relativa)
+    const redirectTo = window.location.pathname.includes('/pages/') ? '../index.html' : 'index.html';
+    window.location.href = redirectTo;
     const btnPerfil = document.getElementById('btnPerfil');
     const btnSair = document.getElementById('btnSair');
     const adminButton = document.getElementById('admin-button');
@@ -329,8 +334,5 @@ function sair() {
     if (adminButton) adminButton.style.display = 'none';
     if (userName) userName.textContent = 'Cliente';
     
-    // Redirecionar para a página inicial se não estiver nela
-    if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
-        window.location.href = '/';
-    }
+    // Não forçar mais redirecionamentos adicionais aqui; já definimos um redirect relativo acima.
 }

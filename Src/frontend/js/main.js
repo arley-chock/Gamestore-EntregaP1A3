@@ -439,6 +439,10 @@ function sair() {
     usuarioAtual = null;
     atualizarInterfaceUsuario();
     mostrarSucesso('Logout realizado com sucesso!');
+    // Redirecionamento relativo robusto para página inicial
+    const redirectTo = window.location.pathname.includes('/pages/') ? '../index.html' : 'index.html';
+    // Pequeno timeout para deixar a mensagem de sucesso aparecer antes de redirecionar
+    setTimeout(() => { window.location.href = redirectTo; }, 300);
 }
 
 function mostrarCarregamento() {
