@@ -567,10 +567,17 @@ window.checkAuthStatus = async function() {
 function updateUIForLoggedUser(userData) {
     const userActions = document.getElementById('userActions');
     if (userActions) {
+        const initial = userData && userData.nome ? userData.nome.charAt(0).toUpperCase() : 'U';
         userActions.innerHTML = `
-            <span class="user-greeting">Olá, ${userData.nome}</span>
-            <a href="pages/usuario.html" class="botao-entrar">Meu Perfil</a>
-            <button class="botao-entrar" onclick="handleLogout()">Sair</button>
+            <div class="user-area">
+                <div class="user-pill">
+                    <span class="user-avatar">${initial}</span>
+                    <span id="userName" class="user-name">${userData.nome}</span>
+                </div>
+                <a href="pages/usuario.html" id="btnPerfil" class="btn-profile">MEU PERFIL</a>
+                <button id="btnSair" class="btn-logout" onclick="sair()">SAIR</button>
+                <a href="pages/admin.html" id="admin-button" class="admin-button" style="display:none;"><span class="admin-icon">👑</span> Admin</a>
+            </div>
         `;
     }
 }
@@ -579,7 +586,10 @@ function updateUIForGuest() {
     const userActions = document.getElementById('userActions');
     if (userActions) {
         userActions.innerHTML = `
-            <button class="botao-entrar" onclick="alternarModalAutenticacao()">Entrar/Registrar</button>
+            <div class="user-area">
+                <button id="btnEntrar" class="botao-entrar" onclick="alternarModalAutenticacao()">Entrar</button>
+                <button id="btnRegistrar" class="botao-registrar" onclick="alternarModalAutenticacao()">Registrar</button>
+            </div>
         `;
     }
 }

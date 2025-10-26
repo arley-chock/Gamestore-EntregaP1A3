@@ -27,12 +27,12 @@
                 </ul>
             </nav>
             <div class="acoes-usuario" id="userActions">
-                <span id="userGreeting">Olá, <span id="userName">Cliente</span></span>
+                <!-- Conteúdo dinâmico: será atualizado via JS mantendo compatibilidade com outros módulos -->
+                <span class="user-greeting" id="userGreeting">Olá, <span id="userName" class="user-name">Cliente</span></span>
                 <a href="pages/admin.html" id="admin-button" class="admin-button" style="display: none;">
-                    <span class="admin-icon">👑</span>
-                    Admin
+                    <span class="admin-icon">👑</span> Admin
                 </a>
-                <button id="btnPerfil" class="botao-perfil" onclick="window.location.href='pages/usuario.html'" style="display:none;"><u>MEU PERFIL</u></button>
+                <button id="btnPerfil" class="botao-perfil" onclick="window.location.href='pages/usuario.html'" style="display:none;">MEU PERFIL</button>
                 <button id="btnSair" class="botao-sair" onclick="sair()" style="display:none;">SAIR</button>
             </div>
         </div>

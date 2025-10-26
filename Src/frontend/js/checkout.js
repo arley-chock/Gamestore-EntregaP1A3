@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function checkAuth() {
     const token = localStorage.getItem('authToken');
     if (!token) {
-        window.location.href = 'auth.html';
+        window.location.href = '../index.html';
     }
 }
 

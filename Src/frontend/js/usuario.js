@@ -21,7 +21,7 @@ async function loadUserProfile() {
     const token = localStorage.getItem('authToken');
     
     if (!token) {
-        window.location.href = 'auth.html';
+        window.location.href = '../index.html';
         return;
     }
 
@@ -319,7 +319,7 @@ function handleAuth() {
         window.location.href = '../index.html';
     } else {
         // ir para a página de autenticação (mesma pasta pages)
-        window.location.href = 'auth.html';
+        window.location.href = '../index.html';
     }
 }
 

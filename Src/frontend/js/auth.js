@@ -317,7 +317,8 @@ function sair() {
     // Limpar token de autenticação
     localStorage.removeItem('authToken');
     
-    // Atualizar UI
+    // Redirecionar para a página inicial
+    window.location.href = '/index.html';
     const btnPerfil = document.getElementById('btnPerfil');
     const btnSair = document.getElementById('btnSair');
     const adminButton = document.getElementById('admin-button');
