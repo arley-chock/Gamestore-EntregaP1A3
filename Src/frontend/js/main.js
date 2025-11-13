@@ -141,9 +141,14 @@ function obterJogosEmAlta() {
 function obterJogosRecomendados() {
     return jogos
         .filter(jogo => jogo.preco < 50)
-        .sort((a, b) => Math.random() - 0.5)
+        .sort((a, b) => {
+            // Ordenar por preço (mais barato primeiro), depois por ano (mais recente primeiro)
+            if (a.preco !== b.preco) {
+                return a.preco - b.preco;
+            }
+            return b.ano - a.ano;
+        })
         .slice(0, 3);
-}
 
 async function mostrarDetalhesJogo(jogo) {
     const modal = document.getElementById('modalJogo');

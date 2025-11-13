@@ -1,0 +1,13 @@
+/* App.css - Estilos específicos do App React */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Garantir que o conteúdo principal tenha espaço para o header fixo */
+.conteudo-principal {
+  margin-top: 80px;
+  flex: 1;
+}
+
