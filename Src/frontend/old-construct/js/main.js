@@ -119,9 +119,63 @@ function criarCartaoJogo(jogo) {
     const imgEl = cartao.querySelector('.imagem-jogo-src');
     if (imgEl) {
         setImageWithFallback(imgEl, jogo.nome, { height: 200 });
+        try { setupCardGifHover(imgEl, jogo.nome); } catch(e) {}
     }
     
     return cartao;
+}
+
+// Anexa comportamento para trocar a imagem por GIF no hover/click em cartões
+function setupCardGifHover(imgEl, gameName) {
+    if (!imgEl || imgEl.tagName !== 'IMG') return;
+    const slug = slugifyGameName(gameName);
+    if (!slug) return;
+    const gifPath = `images/Gifs/${slug}.gif`;
+
+    const probe = new Image();
+    probe.onload = () => {
+        // remove handlers antigos (podem ter sido adicionados ao container)
+        const prevEnter = imgEl._gifEnterHandler;
+        const prevLeave = imgEl._gifLeaveHandler;
+        const prevContainer = imgEl._gifContainer || imgEl.closest('.cartao-jogo') || imgEl.parentElement;
+        if (prevContainer && prevEnter) prevContainer.removeEventListener('mouseenter', prevEnter);
+        if (prevContainer && prevLeave) prevContainer.removeEventListener('mouseleave', prevLeave);
+        if (imgEl._gifEnterHandler && !prevContainer) imgEl.removeEventListener('mouseenter', imgEl._gifEnterHandler);
+        if (imgEl._gifLeaveHandler && !prevContainer) imgEl.removeEventListener('mouseleave', imgEl._gifLeaveHandler);
+
+            const container = imgEl.closest('.cartao-jogo') || imgEl.parentElement;
+            const originalJpg = getLocalImageCandidates(gameName).find(p => p.endsWith('.jpg')) || getLocalImageCandidates(gameName)[0];
+
+            const enter = () => {
+                try {
+                    imgEl.dataset._originalSrc = imgEl.src || imgEl.getAttribute('src') || '';
+                    imgEl.src = gifPath;
+                    imgEl.style.objectFit = 'cover';
+                } catch(e){}
+            };
+
+            const leave = () => {
+                try {
+                    // restaurar para JPG/candidato local quando sair do bloco
+                    if (originalJpg) imgEl.src = originalJpg;
+                } catch(e){}
+            };
+
+            imgEl._gifEnterHandler = enter;
+            imgEl._gifLeaveHandler = leave;
+
+            if (container) {
+                container.addEventListener('mouseenter', enter);
+                container.addEventListener('mouseleave', leave);
+                imgEl._gifContainer = container;
+            } else {
+                imgEl.addEventListener('mouseenter', enter);
+                imgEl.addEventListener('mouseleave', leave);
+                imgEl._gifContainer = null;
+            }
+    };
+    probe.onerror = () => {};
+    probe.src = gifPath;
 }
 
 function obterLancamentos() {
@@ -271,10 +325,28 @@ function getLocalImageCandidates(name) {
 }
 
 function createGradientPlaceholder(letter, width, height) {
-    const placeholderDiv = document.createElement('div');
-    placeholderDiv.style.cssText = `width: 100%; height: ${height || 200}px; background: linear-gradient(135deg, #8B4513, #DC143C); display: flex; align-items: center; justify-content: center; color: white; font-size: ${height ? Math.floor(height/6) : 24}px; font-weight: bold;`;
-    placeholderDiv.textContent = (letter || '?').toString().charAt(0);
-    return placeholderDiv;
+        const placeholderDiv = document.createElement('div');
+        placeholderDiv.style.cssText = `width: 100%; height: ${height || 200}px; background: linear-gradient(135deg, #8B4513, #DC143C); display: flex; align-items: center; justify-content: center; color: white; font-size: ${height ? Math.floor(height/6) : 24}px; font-weight: bold;`;
+        placeholderDiv.textContent = (letter || '?').toString().charAt(0);
+        return placeholderDiv;
+}
+
+function createPlaceholderDataUrl(letter, width = 300, height = 200) {
+        const bg1 = '#8B4513';
+        const bg2 = '#DC143C';
+        const fontSize = Math.floor(height / 6);
+        const svg = `
+        <svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'>
+            <defs>
+                <linearGradient id='g' x1='0' x2='1'>
+                    <stop offset='0' stop-color='${bg1}' />
+                    <stop offset='1' stop-color='${bg2}' />
+                </linearGradient>
+            </defs>
+            <rect width='100%' height='100%' fill='url(#g)' />
+            <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial, Helvetica, sans-serif' font-size='${fontSize}' font-weight='700'>${(letter||'?').toString().charAt(0)}</text>
+        </svg>`;
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
 function setImageWithFallback(imgEl, gameName, options = {}) {
@@ -296,12 +368,22 @@ function setImageWithFallback(imgEl, gameName, options = {}) {
                 imgEl.style.width = '100%';
             }
         } else {
-            // Fallback visual: substitui a IMG por um espaço reservado em gradiente
-            const container = imgEl.parentElement;
-            if (container) {
-                const ph = createGradientPlaceholder(gameName, container.clientWidth, height || 200);
-                container.replaceChild(ph, imgEl);
-            }
+                // Fallback visual: manter o elemento <img> e usar um data-URL SVG como placeholder
+                try {
+                    const placeholderDataUrl = createPlaceholderDataUrl(gameName ? gameName.charAt(0) : '?', imgEl.clientWidth || 300, height || 200);
+                    imgEl.src = placeholderDataUrl;
+                    imgEl.alt = gameName || '';
+                    imgEl.style.height = `${height || 200}px`;
+                    imgEl.style.objectFit = 'cover';
+                    imgEl.style.width = '100%';
+                } catch (e) {
+                    // Se algo falhar, como último recurso, substitui por div
+                    const container = imgEl.parentElement;
+                    if (container) {
+                        const ph = createGradientPlaceholder(gameName, container.clientWidth, height || 200);
+                        container.replaceChild(ph, imgEl);
+                    }
+                }
         }
     }
 
@@ -310,6 +392,7 @@ function setImageWithFallback(imgEl, gameName, options = {}) {
 
 // Expor helpers globalmente para uso em outras páginas (ex.: clássicos)
 window.setImageWithFallback = setImageWithFallback;
+window.setupCardGifHover = setupCardGifHover;
 
 function configurarFiltros() {
     const botoesFiltro = document.querySelectorAll('.botao-filtro');

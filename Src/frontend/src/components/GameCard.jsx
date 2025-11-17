@@ -1,70 +1,152 @@
-import React from 'react'
+import React, { useRef, useEffect, useState } from 'react'
+import { getGifPath, getLocalImageCandidates } from '../utils/imageUtils'
 
 const GameCard = ({ jogo, onClick }) => {
-  const slugifyGameName = (name) => {
-    if (!name) return ''
-    return name
-      .toString()
-      .normalize('NFD').replace(/\p{Diacritic}+/gu, '') // remove acentos
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
+  const imgRef = useRef(null)
+  const cardRef = useRef(null)
+  const placeholderRef = useRef(null)
+  const [loaded, setLoaded] = useState(false)
 
-  const getImageUrl = (gameName) => {
-    const slug = slugifyGameName(gameName)
-    // Tentar primeiro com imagem local, depois fallback para placeholder
-    return `/images/${slug}.jpg`
+  const createPlaceholderDataUrl = (letter, width = 400, height = 200) => {
+    const bg1 = '#8B4513'
+    const bg2 = '#DC143C'
+    const fontSize = Math.floor(height / 4)
+    const svg = `
+      <svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'>
+        <defs>
+          <linearGradient id='g' x1='0' x2='1'>
+            <stop offset='0' stop-color='${bg1}' />
+            <stop offset='1' stop-color='${bg2}' />
+          </linearGradient>
+        </defs>
+        <rect width='100%' height='100%' fill='url(#g)' />
+        <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial, Helvetica, sans-serif' font-size='${fontSize}' font-weight='700'>${(letter||'?').toString().charAt(0)}</text>
+      </svg>`
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
   }
 
   const handleImageError = (e) => {
-    // Se a imagem local não existir, usar um placeholder gradiente
-    e.target.style.display = 'none'
-    const placeholder = e.target.parentElement.querySelector('.image-placeholder')
-    if (placeholder) {
-      placeholder.style.display = 'flex'
+    const img = e.target
+    const candidates = img.dataset._candidates ? JSON.parse(img.dataset._candidates) : []
+    let idx = Number(img.dataset._candidateIndex || 0)
+    idx += 1
+    if (idx < candidates.length) {
+      img.dataset._candidateIndex = idx
+      img.src = candidates[idx]
+      return
     }
+
+    // nenhum candidato restante: usar placeholder data-url e manter o <img>
+    const ph = createPlaceholderDataUrl(jogo.nome ? jogo.nome.charAt(0) : '?', img.clientWidth || 400, img.clientHeight || 200)
+    img.src = ph
+    img.dataset._originalSrc = ph
+    if (placeholderRef.current) placeholderRef.current.style.display = 'none'
+    setLoaded(true)
   }
 
   const handleImageLoad = (e) => {
-    const placeholder = e.target.parentElement.querySelector('.image-placeholder')
-    if (placeholder) {
-      placeholder.style.display = 'none'
-    }
+    if (placeholderRef.current) placeholderRef.current.style.display = 'none'
+    setLoaded(true)
   }
 
   const getInitial = (name) => {
     return name ? name.charAt(0).toUpperCase() : '?'
   }
 
+  const handleKeyDownCard = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      if (onClick) onClick()
+    }
+  }
+
+  useEffect(() => {
+    const img = imgRef.current
+
+    if (!img || !jogo || !jogo.nome) return
+
+    // preparar candidatos locais (png/jpg/webp)
+    const candidates = getLocalImageCandidates(jogo.nome)
+    img.dataset._candidates = JSON.stringify(candidates)
+    img.dataset._candidateIndex = 0
+    img.src = candidates[0]
+
+    // verificar e anexar hover para GIF quando disponível
+    const gifPath = getGifPath(jogo.nome)
+    const probe = new Image()
+    let enterHandler = null
+    let leaveHandler = null
+
+    probe.onload = () => {
+      // preferir o primeiro candidato JPG como fonte de restauração
+      const originalJpg = getLocalImageCandidates(jogo.nome).find(p => p.endsWith('.jpg')) || getLocalImageCandidates(jogo.nome)[0]
+
+      enterHandler = () => {
+        try {
+          // trocar para GIF ao entrar no cartão
+          img.dataset._savedSrc = img.src || ''
+          img.src = gifPath
+          img.style.objectFit = 'cover'
+        } catch (e) {}
+      }
+
+      leaveHandler = () => {
+        try {
+          // ao sair do hover, restaurar para o JPG/candidato local (ficando estática)
+          if (originalJpg) img.src = originalJpg
+        } catch (e) {}
+      }
+
+      const cardEl = cardRef.current
+      if (cardEl) {
+        cardEl.addEventListener('mouseenter', enterHandler)
+        cardEl.addEventListener('mouseleave', leaveHandler)
+      }
+    }
+    probe.onerror = () => {}
+    probe.src = gifPath
+
+    return () => {
+      try {
+        const cardEl = cardRef.current
+        if (cardEl && enterHandler) cardEl.removeEventListener('mouseenter', enterHandler)
+        if (cardEl && leaveHandler) cardEl.removeEventListener('mouseleave', leaveHandler)
+      } catch (e) {}
+    }
+  }, [jogo])
+
   if (!jogo || !jogo.nome) {
     return null
   }
 
   return (
-    <div className="cartao-jogo" onClick={onClick}>
-      <div className="imagem-jogo">
-        <img 
-          src={getImageUrl(jogo.nome)} 
+    <div ref={cardRef} className="cartao-jogo" onClick={onClick} role="button" tabIndex={0} onKeyDown={handleKeyDownCard}>
+      <div className="imagem-jogo" style={{ position: 'relative' }}>
+        <img
+          ref={imgRef}
           alt={jogo.nome}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          style={{ display: 'none' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
-        <div className="image-placeholder" style={{
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(135deg, #8B4513, #DC143C)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: '48px',
-          fontWeight: 'bold',
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}>
+        <div
+          ref={placeholderRef}
+          className="image-placeholder"
+          style={{
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(135deg, #8B4513, #DC143C)',
+            display: loaded ? 'none' : 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontSize: '48px',
+            fontWeight: 'bold',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }}
+        >
           {getInitial(jogo.nome)}
         </div>
         <div className="sobreposicao-jogo">

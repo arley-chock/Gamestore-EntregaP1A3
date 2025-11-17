@@ -82,6 +82,7 @@ function createClassicGameCard(game) {
     const imgEl = card.querySelector('.classic-image');
     if (imgEl && window.setImageWithFallback) {
         setImageWithFallback(imgEl, game.titulo, { height: 200 });
+        try { if (window.setupCardGifHover) window.setupCardGifHover(imgEl, game.titulo); } catch(e) {}
     }
     
     return card;
