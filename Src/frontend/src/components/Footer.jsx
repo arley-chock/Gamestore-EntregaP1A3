@@ -1,24 +1,19 @@
-import '../../css/style.css'
+import React from 'react'
 
-function Footer() {
+const Footer = () => {
   return (
-    <footer className="rodape">
-      <div className="conteiner">
-        <div className="links-rodape">
-          <a href="/pages/sobre.html" className="link-rodape">
-            Sobre nós
-          </a>
-          <a href="/pages/faq.html" className="link-rodape">
-            FAQ
-          </a>
-          <a href="/pages/politicas.html" className="link-rodape">
-            Políticas
-          </a>
-        </div>
+    <footer className="footer">
+      <div className="container">
+        <nav className="links-rodape">
+          <a href="#" className="link-rodape">Sobre Nós</a>
+          <a href="#" className="link-rodape">Contato</a>
+          <a href="#" className="link-rodape">Política de Privacidade</a>
+          <a href="#" className="link-rodape">Termos de Uso</a>
+          <a href="#" className="link-rodape">Suporte</a>
+        </nav>
       </div>
     </footer>
   )
 }
 
 export default Footer
-

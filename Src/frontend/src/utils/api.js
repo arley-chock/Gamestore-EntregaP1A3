@@ -1,5 +1,8 @@
 // Utilitário centralizado para chamadas de API
-const API_BASE_URL = 'http://localhost:3000/api/v1'
+// Usar proxy do Vite (em dev) ou URL completa (em produção)
+const API_BASE_URL = import.meta.env.DEV 
+  ? '/api/v1'  // Em desenvolvimento, usar proxy do Vite
+  : 'http://localhost:3000/api/v1'  // Em produção, usar URL completa
 
 export async function fetchGames() {
   try {

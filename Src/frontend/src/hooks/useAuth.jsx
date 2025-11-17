@@ -1,7 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { API_BASE_URL } from '../utils/api'
 
+// Criar o contexto de autenticação
+const AuthContext = createContext(null)
+
+// Hook para usar o contexto de autenticação
 export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider')
+  }
+  return context
+}
+
+// Provider de autenticação
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -133,7 +146,7 @@ export function useAuth() {
     window.location.reload()
   }
 
-  return {
+  const value = {
     user,
     isAdmin,
     isLoading,
@@ -142,5 +155,10 @@ export function useAuth() {
     logout,
     checkAuthStatus
   }
-}
 
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
+}

@@ -5,9 +5,14 @@ class JogoController {
     async index(req, res) {
         try {
             const jogos = await JogoDAO.all(req.query.categoria);
-            if (jogos.length === 0) return res.status(204).json();
+            if (jogos.length === 0) {
+                console.log('⚠️ Nenhum jogo encontrado no banco de dados');
+                return res.status(200).json([]); // Retornar array vazio em vez de 204
+            }
+            console.log(`✅ Retornando ${jogos.length} jogos`);
             res.json(jogos);
         } catch (error) {
+            console.error('❌ Erro ao buscar jogos:', error);
             res.status(500).json({ error: error.message, message: 'Erro ao buscar jogos.' });
         }
     }

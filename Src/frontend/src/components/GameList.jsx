@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../utils/api'
 import GameCard from './GameCard'
 import './GameList.css'
 
@@ -11,7 +12,7 @@ function GameList() {
     const fetchGames = async () => {
       try {
         setLoading(true)
-        const response = await fetch('http://localhost:3000/api/v1/jogos')
+        const response = await fetch(`${API_BASE_URL}/jogos`)
         if (!response.ok) {
           throw new Error('Erro ao buscar jogos')
         }

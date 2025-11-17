@@ -1,99 +1,77 @@
-import { useState, useEffect } from 'react'
-import { getLocalImageCandidates, getGifPath } from '../utils/imageUtils'
-import '../../css/style.css'
+import React from 'react'
 
-function GameCard({ game, onClick }) {
-  const [imageSrc, setImageSrc] = useState('')
-  const [imageError, setImageError] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
-
-  useEffect(() => {
-    loadImage()
-  }, [game])
-
-  const loadImage = () => {
-    if (game.foto) {
-      setImageSrc(game.foto)
-      return
-    }
-
-    const candidates = getLocalImageCandidates(game.nome)
-    let index = 0
-
-    const tryNext = () => {
-      if (index < candidates.length) {
-        const img = new Image()
-        img.onload = () => {
-          setImageSrc(candidates[index])
-          setImageError(false)
-        }
-        img.onerror = () => {
-          index++
-          tryNext()
-        }
-        img.src = candidates[index]
-      } else {
-        setImageError(true)
-      }
-    }
-
-    tryNext()
+const GameCard = ({ jogo, onClick }) => {
+  const slugifyGameName = (name) => {
+    if (!name) return ''
+    return name
+      .toString()
+      .normalize('NFD').replace(/\p{Diacritic}+/gu, '') // remove acentos
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
   }
 
-  const handleMouseEnter = () => {
-    setIsHovering(true)
-    const gifPath = getGifPath(game.nome)
-    const img = new Image()
-    img.onload = () => {
-      setImageSrc(gifPath)
-    }
-    img.src = gifPath
+  const getImageUrl = (gameName) => {
+    const slug = slugifyGameName(gameName)
+    // Tentar primeiro com imagem local, depois fallback para placeholder
+    return `/images/${slug}.jpg`
   }
 
-  const handleMouseLeave = () => {
-    setIsHovering(false)
-    loadImage()
+  const handleImageError = (e) => {
+    // Se a imagem local não existir, usar um placeholder gradiente
+    e.target.style.display = 'none'
+    const placeholder = e.target.parentElement.querySelector('.image-placeholder')
+    if (placeholder) {
+      placeholder.style.display = 'flex'
+    }
+  }
+
+  const handleImageLoad = (e) => {
+    const placeholder = e.target.parentElement.querySelector('.image-placeholder')
+    if (placeholder) {
+      placeholder.style.display = 'none'
+    }
+  }
+
+  const getInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : '?'
+  }
+
+  if (!jogo || !jogo.nome) {
+    return null
   }
 
   return (
-    <div
-      className="cartao-jogo"
-      onClick={() => onClick(game)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="cartao-jogo" onClick={onClick}>
       <div className="imagem-jogo">
-        {imageError ? (
-          <div
-            style={{
-              width: '100%',
-              height: '200px',
-              background: 'linear-gradient(135deg, #8B4513, #DC143C)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '24px',
-              fontWeight: 'bold'
-            }}
-          >
-            {game.nome.charAt(0).toUpperCase()}
-          </div>
-        ) : (
-          <img
-            className="imagem-jogo-src"
-            src={imageSrc}
-            alt={game.nome}
-            style={{
-              height: '200px',
-              objectFit: 'cover',
-              width: '100%'
-            }}
-          />
-        )}
+        <img 
+          src={getImageUrl(jogo.nome)} 
+          alt={jogo.nome}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          style={{ display: 'none' }}
+        />
+        <div className="image-placeholder" style={{
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(135deg, #8B4513, #DC143C)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: '48px',
+          fontWeight: 'bold',
+          position: 'absolute',
+          top: 0,
+          left: 0
+        }}>
+          {getInitial(jogo.nome)}
+        </div>
         <div className="sobreposicao-jogo">
-          <div className="titulo-jogo">{game.nome.toUpperCase()}</div>
-          <div className="subtitulo-jogo">{game.ano}</div>
+          <div className="titulo-jogo">{(jogo.nome || '').toUpperCase()}</div>
+          <div className="subtitulo-jogo">
+            {jogo.ano || 'N/A'} • R$ {(jogo.preco || 0).toFixed(2)}
+          </div>
         </div>
       </div>
     </div>

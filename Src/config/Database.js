@@ -175,21 +175,65 @@ class Database {
         const csvFilePath = path.join(__dirname, 'jogos.csv');
         fs.readFile(csvFilePath, 'utf8', (err, data) => {
             if (err) {
-                console.error('Erro ao ler o arquivo CSV:', err);
+                console.error('❌ Erro ao ler o arquivo CSV:', err);
                 return;
             }
 
-            const lines = data.split('\n').slice(1);
-            lines.forEach(line => {
-                const [nome, ano, preco, descricao, empresa, categoria] = line.split(',');
-                if (nome) {
-                    this.db.run(`INSERT OR IGNORE INTO empresas (nome) VALUES (?)`, [empresa]);
-                    this.db.run(`INSERT OR IGNORE INTO categorias (nome) VALUES (?)`, [categoria]);
+            const lines = data.split('\n').slice(1).filter(line => line.trim());
+            let jogosInseridos = 0;
+            let erros = 0;
+
+            lines.forEach((line, index) => {
+                if (!line.trim()) return;
+                
+                // Parse CSV considerando campos entre aspas
+                const regex = /(".*?"|[^,]+)(?=\s*,|\s*$)/g;
+                const matches = line.match(regex);
+                
+                if (!matches || matches.length < 6) {
+                    console.warn(`⚠️ Linha ${index + 2} do CSV inválida: ${line.substring(0, 50)}`);
+                    erros++;
+                    return;
+                }
+
+                const nome = matches[0].replace(/^"|"$/g, '').trim();
+                const ano = parseInt(matches[1].trim());
+                const preco = parseFloat(matches[2].trim());
+                const descricao = matches[3].replace(/^"|"$/g, '').trim();
+                const empresa = matches[4].trim();
+                const categoria = matches[5].trim();
+
+                if (nome && !isNaN(ano) && !isNaN(preco) && empresa && categoria) {
+                    // Inserir empresa e categoria primeiro
+                    this.db.run(`INSERT OR IGNORE INTO empresas (nome) VALUES (?)`, [empresa], (err) => {
+                        if (err) console.error(`Erro ao inserir empresa ${empresa}:`, err);
+                    });
+                    
+                    this.db.run(`INSERT OR IGNORE INTO categorias (nome) VALUES (?)`, [categoria], (err) => {
+                        if (err) console.error(`Erro ao inserir categoria ${categoria}:`, err);
+                    });
+                    
+                    // Inserir jogo
                     this.db.run(`INSERT OR IGNORE INTO jogos (nome, ano, preco, descricao, fk_empresa, fk_categoria) VALUES 
                         (?, ?, ?, ?, (SELECT id FROM empresas WHERE nome = ?), (SELECT id FROM categorias WHERE nome = ?))`, 
-                        [nome, parseInt(ano), parseFloat(preco), descricao, empresa, categoria]);
+                        [nome, ano, preco, descricao, empresa, categoria], (err) => {
+                            if (err) {
+                                console.error(`❌ Erro ao inserir jogo ${nome}:`, err);
+                                erros++;
+                            } else {
+                                jogosInseridos++;
+                            }
+                        });
+                } else {
+                    console.warn(`⚠️ Linha ${index + 2} tem dados inválidos: ${line.substring(0, 50)}`);
+                    erros++;
                 }
             });
+
+            // Log após um pequeno delay para dar tempo das inserções
+            setTimeout(() => {
+                console.log(`✅ CSV processado: ${jogosInseridos} jogos inseridos, ${erros} erros`);
+            }, 1000);
         });
     }
 }

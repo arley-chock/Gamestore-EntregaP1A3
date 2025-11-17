@@ -1,115 +1,96 @@
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import '../../css/style.css'
+import AuthModal from './AuthModal'
 
-function Header({ onOpenAuthModal }) {
+const Header = () => {
   const { user, isAdmin, logout } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authMode, setAuthMode] = useState('login')
 
   const handleLogout = () => {
     logout()
   }
 
-  const handleAuthClick = () => {
-    if (onOpenAuthModal) {
-      onOpenAuthModal()
-    }
+  const openAuthModal = (mode) => {
+    setAuthMode(mode)
+    setShowAuthModal(true)
+  }
+
+  const getUserInitial = () => {
+    return user?.nome?.charAt(0)?.toUpperCase() || 'U'
   }
 
   return (
-    <header className="cabecalho">
-      <div className="conteiner">
-        <div className="logo-container">
-          <div className="logo">
-            <div className="icone-logo">
-              <div className="icone-alien"></div>
+    <>
+      <header className="header">
+        <div className="container">
+          <div className="logo-container">
+            <div className="logo">
+              <div className="icone-logo">
+                <div className="icone-alien"></div>
+              </div>
+              <Link to="/" className="link-logo">
+                GameStore Digital
+              </Link>
             </div>
-            <a href="/" className="link-logo">
-              GameStore Digital
-            </a>
+          </div>
+
+          <nav className="nav">
+            <ul className="lista-navegacao">
+              <li><Link to="/" className="link-navegacao">Início</Link></li>
+              <li><Link to="/" className="link-navegacao">Jogos</Link></li>
+              <li><Link to="/classicos" className="link-navegacao">Clássicos</Link></li>
+              <li><Link to="/suporte" className="link-navegacao">Suporte</Link></li>
+            </ul>
+          </nav>
+
+          <div className="user-area">
+            {user ? (
+              <div className="user-actions">
+                <div className="user-pill">
+                  <span className="user-avatar">{getUserInitial()}</span>
+                  <span className="user-name">{user.nome}</span>
+                </div>
+                <Link to="/usuario" className="btn-profile">
+                  MEU PERFIL
+                </Link>
+                <button onClick={handleLogout} className="btn-logout">
+                  SAIR
+                </button>
+                {isAdmin && (
+                  <Link to="/admin" className="admin-button">
+                    <span className="admin-icon">👑</span> Admin
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="user-actions">
+                <button 
+                  onClick={() => openAuthModal('login')}
+                  className="botao-entrar"
+                >
+                  Entrar
+                </button>
+                <button 
+                  onClick={() => openAuthModal('register')}
+                  className="botao-registrar"
+                >
+                  Registrar
+                </button>
+              </div>
+            )}
           </div>
         </div>
-        <nav className="nav">
-          <ul className="lista-navegacao">
-            <li>
-              <a href="/" className="link-navegacao">
-                Jogos
-              </a>
-            </li>
-            <li>
-              <a href="/pages/classicos.html" className="link-navegacao">
-                Clássicos
-              </a>
-            </li>
-            <li>
-              <a href="/pages/noticias.html" className="link-navegacao">
-                Notícias
-              </a>
-            </li>
-            <li>
-              <a href="/pages/suporte.html" className="link-navegacao">
-                Suporte
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <div className="acoes-usuario" id="userActions">
-          <span className="user-greeting" id="userGreeting">
-            Olá,{' '}
-            <span id="userName" className="user-name">
-              {user ? user.nome : 'Cliente'}
-            </span>
-          </span>
-          {isAdmin && (
-            <a
-              href="/pages/admin.html"
-              id="admin-button"
-              className="admin-button"
-              style={{ display: 'inline-flex' }}
-            >
-              <span className="admin-icon">👑</span> Admin
-            </a>
-          )}
-          {user ? (
-            <>
-              <button
-                id="btnPerfil"
-                className="botao-perfil"
-                onClick={() => (window.location.href = '/pages/usuario.html')}
-                style={{ display: 'inline-block' }}
-              >
-                MEU PERFIL
-              </button>
-              <button
-                id="btnSair"
-                className="botao-sair"
-                onClick={handleLogout}
-                style={{ display: 'inline-block' }}
-              >
-                SAIR
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                id="btnEntrar"
-                className="botao-entrar"
-                onClick={handleAuthClick}
-                style={{ display: 'inline-block' }}
-              >
-                Entrar
-              </button>
-              <button
-                id="btnRegistrar"
-                className="botao-registrar"
-                onClick={handleAuthClick}
-                style={{ display: 'inline-block' }}
-              >
-                Registrar
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
+      </header>
+
+      <AuthModal 
+        show={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        mode={authMode}
+        onModeChange={setAuthMode}
+      />
+    </>
   )
 }
 
