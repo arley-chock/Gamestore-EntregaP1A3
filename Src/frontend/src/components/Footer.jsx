@@ -9,7 +9,6 @@ const Footer = () => {
           <a href="#" className="link-rodape">Contato</a>
           <a href="#" className="link-rodape">Política de Privacidade</a>
           <a href="#" className="link-rodape">Termos de Uso</a>
-          <a href="#" className="link-rodape">Suporte</a>
         </nav>
       </div>
     </footer>

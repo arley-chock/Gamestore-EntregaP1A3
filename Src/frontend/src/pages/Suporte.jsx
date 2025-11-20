@@ -141,7 +141,8 @@ const Suporte = () => {
     <div className="suporte-page">
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <button className="breadcrumb-btn">INÍCIO &gt; SUPORTE</button>
+        <button className="breadcrumb-btn" onClick={() => navigate('/')}>INÍCIO</button>
+        <span className="breadcrumb-text">&gt; SUPORTE</span>
       </div>
 
       <div className="suporte-container">

@@ -5,6 +5,8 @@ import GameModal from '../components/GameModal'
 
 import { API_BASE_URL } from '../utils/api'
 
+let CATEGORIA_MAP = {}
+
 const Home = () => {
   const { user } = useAuth()
   const [jogos, setJogos] = useState([])
@@ -14,64 +16,89 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('todos')
   const [precoMaximo, setPrecoMaximo] = useState(1000)
+  const [categorias, setCategorias] = useState([]) 
+
 
   useEffect(() => {
-    carregarJogos()
+    carregarDadosIniciais()
   }, [])
 
   useEffect(() => {
     aplicarFiltros()
   }, [jogos, searchTerm, filtroCategoria, precoMaximo])
 
-  const carregarJogos = async () => {
+
+ 
+  const carregarCategorias = async () => {
     try {
-      setLoading(true)
-      console.log('🔄 Carregando jogos de:', `${API_BASE_URL}/jogos`)
-      
-      const response = await fetch(`${API_BASE_URL}/jogos`, {
+      console.log(' Carregando categorias de:', `${API_BASE_URL}/categorias`)
+      const response = await fetch(`${API_BASE_URL}/categorias`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
         mode: 'cors'
       })
-      
-      console.log('📡 Resposta recebida:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      })
 
-      // Status 204 significa "No Content" - não há jogos no banco (mas agora retornamos 200 com array vazio)
+      if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status} ao carregar categorias`)
+      }
+
+      const dadosCategorias = await response.json()
+      setCategorias(dadosCategorias)
+      
+      // Cria o mapa globalmente para ser usado na normalização dos jogos
+      CATEGORIA_MAP = dadosCategorias.reduce((acc, categoria) => {
+        acc[categoria.id] = categoria.nome;
+        return acc;
+      }, {})
+      console.log('✅ Mapa de Categorias criado:', CATEGORIA_MAP)
+      return CATEGORIA_MAP;
+
+    } catch (error) {
+      console.error('💥 Erro ao carregar categorias:', error)
+      return {};
+    }
+  }
+
+  /* 2. FUNÇÃO UNIFICADA PARA CARREGAR DADOS INICIAIS */
+  const carregarDadosIniciais = async () => {
+    setLoading(true)
+    const categoriasMap = await carregarCategorias()
+    await carregarJogos(categoriasMap)
+    setLoading(false)
+  }
+
+  /* 3. FUNÇÃO PARA CARREGAR JOGOS (Agora recebe o mapa de categorias)*/
+  const carregarJogos = async (categoriasMap) => {
+    try {
+      console.log('🔄 Carregando jogos de:', `${API_BASE_URL}/jogos`)
+      
+      const response = await fetch(`${API_BASE_URL}/jogos`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors'
+      })
+      
       if (response.status === 204) {
         console.warn('⚠️ Nenhum jogo encontrado no banco de dados (status 204)')
-        console.warn('💡 Dica: Verifique se o banco de dados foi populado corretamente')
         setJogos([])
-        setLoading(false)
         return
       }
 
-      // Verificar se a resposta é JSON antes de fazer parse
       const contentType = response.headers.get('content-type') || ''
-      console.log('📋 Content-Type da resposta:', contentType)
-      
       if (!contentType.includes('application/json')) {
-        // Clonar a resposta para poder ler o texto sem consumir o body original
-        const clonedResponse = response.clone()
-        const textResponse = await clonedResponse.text()
-        console.error('❌ Resposta não é JSON. Content-Type:', contentType)
-        console.error('❌ Conteúdo recebido (primeiros 200 chars):', textResponse.substring(0, 200))
-        throw new Error('A API retornou HTML em vez de JSON. Verifique se a rota está correta e se o backend está configurado corretamente.')
+        const textResponse = await response.clone().text()
+        console.error('❌ Resposta não é JSON. Conteúdo:', textResponse.substring(0, 200))
+        throw new Error('A API retornou HTML em vez de JSON.')
       }
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ Erro na resposta:', errorText)
-        throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`)
+        throw new Error(`Erro HTTP ${response.status}: ${errorText}`)
       }
 
       const dadosJogos = await response.json()
-      console.log('✅ Dados recebidos:', Array.isArray(dadosJogos) ? `${dadosJogos.length} jogos` : dadosJogos)
       
       if (!Array.isArray(dadosJogos)) {
         console.warn('⚠️ Resposta não é um array:', dadosJogos)
@@ -79,32 +106,34 @@ const Home = () => {
         return
       }
 
-      // Normalizar os dados (garantir que fk_empresa e fk_categoria sejam mapeados corretamente)
-      const jogosNormalizados = dadosJogos.map(jogo => ({
-        ...jogo,
-        fkEmpresa: jogo.fkEmpresa || jogo.fk_empresa,
-        fkCategoria: jogo.fkCategoria || jogo.fk_categoria,
-        categoria: jogo.categoria || jogo.fkCategoria || jogo.fk_categoria
-      }))
+      const jogosNormalizados = dadosJogos.map(jogo => {
+        const fkCategoria = jogo.fkCategoria || jogo.fk_categoria;
+        
+        return {
+          ...jogo,
+          fkEmpresa: jogo.fkEmpresa || jogo.fk_empresa,
+          fkCategoria: fkCategoria,
+          categoria: categoriasMap[fkCategoria] || jogo.categoria || 'Desconhecida'
+        }
+      })
 
       if (jogosNormalizados.length === 0) {
         console.warn('⚠️ Nenhum jogo retornado da API')
       } else {
-        console.log('✅ Jogos normalizados:', jogosNormalizados.length)
+        console.log('✅ Jogos normalizados e mapeados para nome:', jogosNormalizados.length)
       }
 
       setJogos(jogosNormalizados)
+
     } catch (error) {
       console.error('💥 Erro ao carregar jogos:', error)
-      // Verificar se é erro de rede
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        console.error('❌ Erro de conexão: Não foi possível conectar ao servidor. Verifique se o backend está rodando em http://localhost:3000')
+        console.error('❌ Erro de conexão: Verifique se o backend está rodando.')
       }
       setJogos([])
-    } finally {
-      setLoading(false)
     }
   }
+
 
   const aplicarFiltros = () => {
     let filtrados = [...jogos]
@@ -117,8 +146,7 @@ const Home = () => {
 
     if (filtroCategoria !== 'todos') {
       filtrados = filtrados.filter(jogo => {
-        // Verificar se a categoria corresponde (pode ser ID ou nome)
-        const categoriaJogo = String(jogo.categoria || jogo.fkCategoria || '').toLowerCase()
+        const categoriaJogo = String(jogo.categoria || '').toLowerCase()
         const categoriaFiltro = filtroCategoria.toLowerCase()
         return categoriaJogo.includes(categoriaFiltro)
       })
@@ -138,10 +166,8 @@ const Home = () => {
     const anoAtual = new Date().getFullYear()
     return jogos
       .filter(jogo => {
-        // Tratar diferentes formatos de ano
         let anoJogo = jogo.ano
         if (typeof anoJogo === 'string') {
-          // Se for string, tentar extrair o ano
           const anoExtraido = parseInt(anoJogo.split('-')[0] || anoJogo)
           anoJogo = isNaN(anoExtraido) ? 0 : anoExtraido
         }
@@ -201,27 +227,24 @@ const Home = () => {
     )
   }
 
-  // Debug: mostrar informações sobre os jogos carregados
   if (jogos.length > 0) {
-    console.log('📊 Estado atual:', {
+    console.log('📊 Estado atual (com categorias mapeadas):', {
       totalJogos: jogos.length,
-      lancamentos: obterLancamentos().length,
-      emAlta: obterJogosEmAlta().length,
-      recomendados: obterJogosRecomendados().length,
-      primeiroJogo: jogos[0]
+      primeiroJogoCategoria: jogos[0]?.categoria // Deve ser o nome da categoria
     })
   }
 
+  const isDefaultView = !searchTerm && filtroCategoria === 'todos' && precoMaximo === 1000
+
   return (
     <div className="container">
-      {/* Breadcrumb */}
       <div className="navegacao-breadcrumb">
         <button className="botao-breadcrumb">
           INÍCIO &gt; CATÁLOGO DE JOGOS
         </button>
       </div>
 
-      {/* Search and Filters */}
+
       <div className="conteiner-conteudo">
         <aside className="barra-lateral-filtros">
           <div className="secao-filtro">
@@ -244,30 +267,10 @@ const Home = () => {
               >
                 Todos
               </button>
-              <button 
-                className={`botao-filtro ${filtroCategoria === 'acao' ? 'ativo' : ''}`}
-                onClick={() => setFiltroCategoria('acao')}
-              >
-                Ação
-              </button>
-              <button 
-                className={`botao-filtro ${filtroCategoria === 'aventura' ? 'ativo' : ''}`}
-                onClick={() => setFiltroCategoria('aventura')}
-              >
-                Aventura
-              </button>
-              <button 
-                className={`botao-filtro ${filtroCategoria === 'rpg' ? 'ativo' : ''}`}
-                onClick={() => setFiltroCategoria('rpg')}
-              >
-                RPG
-              </button>
-              <button 
-                className={`botao-filtro ${filtroCategoria === 'estrategia' ? 'ativo' : ''}`}
-                onClick={() => setFiltroCategoria('estrategia')}
-              >
-                Estratégia
-              </button>
+              {categorias.map((cat) => (
+                <button  key={cat.id}className={`botao-filtro ${filtroCategoria === cat.nome.toLowerCase() ? 'ativo' : ''}`}
+                  onClick={() => setFiltroCategoria(cat.nome.toLowerCase())}>{cat.nome}</button>
+              ))}
             </div>
           </div>
 
@@ -291,7 +294,6 @@ const Home = () => {
         </aside>
 
         <main className="conteudo-jogos">
-          {/* Mensagem se não houver jogos */}
           {jogos.length === 0 && (
             <div style={{ 
               textAlign: 'center', 
@@ -302,82 +304,80 @@ const Home = () => {
             }}>
               <h2 style={{ color: '#2F2F2F', marginBottom: '15px' }}>Nenhum jogo encontrado</h2>
               <p style={{ color: '#666', marginBottom: '20px' }}>
-                Não há jogos cadastrados no banco de dados no momento.
+                Não há jogos cadastrados no banco de dados ou a conexão falhou.
               </p>
               <p style={{ color: '#999', fontSize: '14px' }}>
-                Verifique o console do navegador (F12) para mais detalhes sobre a conexão com a API.
+                Verifique o console (F12) para detalhes sobre a API.
               </p>
             </div>
           )}
 
-          {/* Lançamentos */}
-          {jogos.length > 0 && (
-            <section className="secao-jogo">
-              <h2 className="titulo-secao">Lançamentos</h2>
-              <div className="grade-jogos">
-                {obterLancamentos().length > 0 ? (
-                  obterLancamentos().map(jogo => (
-                    <GameCard 
-                      key={jogo.id} 
-                      jogo={jogo} 
-                      onClick={() => handleGameClick(jogo)} 
-                    />
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
-                    Nenhum lançamento disponível no momento.
-                  </p>
-                )}
-              </div>
-            </section>
+          {isDefaultView && jogos.length > 0 && (
+            <>
+              {/* Lançamentos */}
+              <section className="secao-jogo">
+                <h2 className="titulo-secao">Lançamentos</h2>
+                <div className="grade-jogos">
+                  {obterLancamentos().length > 0 ? (
+                    obterLancamentos().map(jogo => (
+                      <GameCard 
+                        key={jogo.id} 
+                        jogo={jogo} 
+                        onClick={() => handleGameClick(jogo)} 
+                      />
+                    ))
+                  ) : (
+                    <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
+                      Nenhum lançamento disponível no momento.
+                    </p>
+                  )}
+                </div>
+              </section>
+
+              {/* Em Alta */}
+              <section className="secao-jogo">
+                <h2 className="titulo-secao">Em Alta</h2>
+                <div className="grade-jogos">
+                  {obterJogosEmAlta().length > 0 ? (
+                    obterJogosEmAlta().map(jogo => (
+                      <GameCard 
+                        key={jogo.id} 
+                        jogo={jogo} 
+                        onClick={() => handleGameClick(jogo)} 
+                      />
+                    ))
+                  ) : (
+                    <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
+                      Nenhum jogo em alta no momento.
+                    </p>
+                  )}
+                </div>
+              </section>
+
+              {/* Recomendados */}
+              <section className="secao-jogo">
+                <h2 className="titulo-secao">Recomendados</h2>
+                <div className="grade-jogos">
+                  {obterJogosRecomendados().length > 0 ? (
+                    obterJogosRecomendados().map(jogo => (
+                      <GameCard 
+                        key={jogo.id} 
+                        jogo={jogo} 
+                        onClick={() => handleGameClick(jogo)} 
+                      />
+                    ))
+                  ) : (
+                    <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
+                      Nenhuma recomendação disponível no momento.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </>
           )}
 
-          {/* Em Alta */}
-          {jogos.length > 0 && (
-            <section className="secao-jogo">
-              <h2 className="titulo-secao">Em Alta</h2>
-              <div className="grade-jogos">
-                {obterJogosEmAlta().length > 0 ? (
-                  obterJogosEmAlta().map(jogo => (
-                    <GameCard 
-                      key={jogo.id} 
-                      jogo={jogo} 
-                      onClick={() => handleGameClick(jogo)} 
-                    />
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
-                    Nenhum jogo em alta no momento.
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Recomendados */}
-          {jogos.length > 0 && (
-            <section className="secao-jogo">
-              <h2 className="titulo-secao">Recomendados</h2>
-              <div className="grade-jogos">
-                {obterJogosRecomendados().length > 0 ? (
-                  obterJogosRecomendados().map(jogo => (
-                    <GameCard 
-                      key={jogo.id} 
-                      jogo={jogo} 
-                      onClick={() => handleGameClick(jogo)} 
-                    />
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', color: '#666', padding: '40px', gridColumn: '1 / -1' }}>
-                    Nenhuma recomendação disponível no momento.
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
-
-          {/* Resultados Filtrados */}
-          {(searchTerm || filtroCategoria !== 'todos' || precoMaximo < 1000) && (
+          {/* Resultados Filtrados - EXIBE SE HOUVER BUSCA/FILTRO ATIVO */}
+          {(!isDefaultView && jogos.length > 0) && (
             <section className="secao-jogo">
               <h2 className="titulo-secao">
                 Resultados da Busca ({jogosFiltrados.length} jogos encontrados)

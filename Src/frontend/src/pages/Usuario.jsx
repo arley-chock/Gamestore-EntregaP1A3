@@ -222,9 +222,9 @@ const Usuario = () => {
   return (
     <div className="usuario-page">
       <div className="breadcrumb">
-        <button className="breadcrumb-btn">INÍCIO &gt; PERFIL DE USUÁRIO</button>
+        <button className="breadcrumb-btn" onClick={() => navigate('/')}>INÍCIOS</button>
+        <span className="breadcrumb-text">&gt; PERFIL DE USUÁRIO</span>
       </div>
-
       <div className="profile-container">
         <div className="profile-header">
           <div className="profile-info">
