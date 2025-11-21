@@ -465,6 +465,31 @@ body {
     justify-content: center;
 }
 
+.modal-media-wrapper {
+    min-height: 360px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.modal-media-wrapper .carrossel-midia {
+    height: 100%;
+}
+
+.modal-media-wrapper img,
+.modal-media-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .modal-media-wrapper {
+        min-height: 240px;
+    }
+}
+
 .conteudo-modal {
     background-color: white;
     margin: 5% auto;

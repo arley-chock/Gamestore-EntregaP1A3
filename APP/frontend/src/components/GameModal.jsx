@@ -3,7 +3,73 @@ import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
 import { apiFetch } from '../utils/api'
-import { getGifPath, getLocalImageCandidates, slugifyGameName } from '../utils/imageUtils'
+import { getLocalImageCandidates, slugifyGameName } from '../utils/imageUtils'
+
+const MEDIA_SOURCE_KEYS = ['url', 'src', 'path', 'value', 'link']
+
+const normalizeMediaSource = (value) => {
+  if (!value || typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  if (trimmed.startsWith('//')) {
+    return `https:${trimmed}`
+  }
+
+  if (/^(https?:|data:|blob:)/i.test(trimmed)) {
+    return trimmed
+  }
+
+  if (trimmed.startsWith('/')) {
+    return trimmed
+  }
+
+  if (trimmed.startsWith('./')) {
+    return normalizeMediaSource(trimmed.replace(/^\.\//, ''))
+  }
+
+  if (/^images\//i.test(trimmed)) {
+    return `/${trimmed.replace(/^\/*/, '')}`
+  }
+
+  return `/images/${trimmed.replace(/^\/*/, '')}`
+}
+
+const collectMediaSources = (candidates = []) => {
+  const seen = new Set()
+  const normalized = []
+
+  const register = (value) => {
+    const mediaSrc = normalizeMediaSource(value)
+    if (mediaSrc && !seen.has(mediaSrc)) {
+      seen.add(mediaSrc)
+      normalized.push(mediaSrc)
+    }
+  }
+
+  const extract = (entry) => {
+    if (!entry) return
+
+    if (Array.isArray(entry)) {
+      entry.forEach(extract)
+      return
+    }
+
+    if (typeof entry === 'string') {
+      register(entry)
+      return
+    }
+
+    if (typeof entry === 'object') {
+      MEDIA_SOURCE_KEYS.forEach((key) => {
+        if (entry[key]) register(entry[key])
+      })
+    }
+  }
+
+  candidates.forEach(extract)
+  return normalized
+}
 
 const GameModal = ({ jogo, onClose }) => {
   const { user } = useAuth()
@@ -21,19 +87,61 @@ const GameModal = ({ jogo, onClose }) => {
   }, [jogo])
 
   const imageSources = useMemo(() => {
-    if (!jogo?.nome) return []
-    return getLocalImageCandidates(jogo.nome)
-  }, [jogo?.nome])
+    if (!jogo) return []
+
+    const directSources = [
+      jogo.imagem,
+      jogo.image,
+      jogo.imageUrl,
+      jogo.imgUrl,
+      jogo.capa,
+      jogo.capaUrl,
+      jogo.cover,
+      jogo.coverUrl,
+      jogo.thumbnail,
+      jogo.thumbnailUrl,
+      jogo.poster,
+      jogo.posterUrl,
+      jogo.background,
+      jogo.backgroundUrl
+    ]
+
+    const groupedSources = [
+      jogo.imagens,
+      jogo.images,
+      jogo.galeria,
+      jogo.gallery,
+      jogo.screenshots
+    ]
+
+    const fallback = jogo?.nome ? getLocalImageCandidates(jogo.nome) : []
+
+    return collectMediaSources([...directSources, ...groupedSources, fallback])
+  }, [jogo])
 
   const gifSources = useMemo(() => {
-    if (!jogo?.nome) return []
-    const slug = slugifyGameName(jogo.nome)
-    // tentar caminhos com variação de caixa para compatibilidade em sistemas diferentes
-    return [
-      `/images/Gifs/${slug}.gif`,
-      `/images/gifs/${slug}.gif`
+    if (!jogo) return []
+    const slug = slugifyGameName(jogo?.nome || '')
+
+    const gifCandidates = [
+      jogo.gif,
+      jogo.gifUrl,
+      jogo.video,
+      jogo.videoUrl,
+      jogo.trailer,
+      jogo.trailerUrl,
+      jogo.media?.gif,
+      jogo.media?.video,
+      jogo.media?.videoUrl,
+      jogo.media?.trailer,
+      jogo.media?.trailerUrl,
+      Array.isArray(jogo.gifs) ? jogo.gifs : [],
+      slug ? `/images/Gifs/${slug}.gif` : null,
+      slug ? `/images/gifs/${slug}.gif` : null
     ]
-  }, [jogo?.nome])
+
+    return collectMediaSources(gifCandidates)
+  }, [jogo])
 
   const mediaItems = useMemo(() => {
     const items = []
@@ -175,12 +283,21 @@ const GameModal = ({ jogo, onClose }) => {
             className="conteudo-detalhe-jogo"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'minmax(320px, 1fr) minmax(320px, 1fr)',
+                  gridTemplateColumns: 'minmax(280px, 420px) minmax(320px, 1fr)',
               gap: '32px',
               alignItems: 'stretch'
             }}
           >
-            <div className="imagem-jogo" style={{ minHeight: '360px' }}>
+            <div 
+              className="modal-media-wrapper"
+              style={{
+                minHeight: '360px',
+                maxHeight: '520px',
+                maxWidth: '420px',
+                width: '100%',
+                justifySelf: 'center'
+              }}
+            >
               <div
                 className="carrossel-midia"
                 style={{
