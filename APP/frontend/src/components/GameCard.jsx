@@ -4,6 +4,7 @@ import { getGifPath, getLocalImageCandidates } from '../utils/imageUtils'
 const GameCard = ({ jogo, onClick }) => {
   const imgRef = useRef(null)
   const cardRef = useRef(null)
+  const gifRef = useRef(null)
   const placeholderRef = useRef(null)
   const [loaded, setLoaded] = useState(false)
 
@@ -78,22 +79,22 @@ const GameCard = ({ jogo, onClick }) => {
     let leaveHandler = null
 
     probe.onload = () => {
-      // preferir o primeiro candidato JPG como fonte de restauração
-      const originalJpg = getLocalImageCandidates(jogo.nome).find(p => p.endsWith('.jpg')) || getLocalImageCandidates(jogo.nome)[0]
-
+      // se o GIF existe, vamos usar um overlay <img> para reproduzi-lo sem trocar o src principal
       enterHandler = () => {
         try {
-          // trocar para GIF ao entrar no cartão
-          img.dataset._savedSrc = img.src || ''
-          img.src = gifPath
-          img.style.objectFit = 'cover'
+          const g = gifRef.current
+          if (!g) return
+          g.src = gifPath
+          g.style.display = 'block'
         } catch (e) {}
       }
 
       leaveHandler = () => {
         try {
-          // ao sair do hover, restaurar para o JPG/candidato local (ficando estática)
-          if (originalJpg) img.src = originalJpg
+          const g = gifRef.current
+          if (!g) return
+          g.style.display = 'none'
+          g.src = ''
         } catch (e) {}
       }
 
@@ -128,6 +129,20 @@ const GameCard = ({ jogo, onClick }) => {
           onError={handleImageError}
           onLoad={handleImageLoad}
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <img
+          ref={gifRef}
+          alt={`${jogo.nome} gif`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'none',
+            pointerEvents: 'none'
+          }}
         />
         <div
           ref={placeholderRef}

@@ -316,7 +316,16 @@ const GameModal = ({ jogo, onClose }) => {
                       key={`${currentMedia.id}-${currentSourceIndex}`}
                       src={currentMediaSrc}
                       alt={`${currentMedia.label} de ${jogo.nome}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        objectPosition: 'center',
+                        display: 'block',
+                        backgroundColor: '#000'
+                      }}
                       onError={() => handleMediaError(currentMedia.id)}
                     />
                   ) : (
