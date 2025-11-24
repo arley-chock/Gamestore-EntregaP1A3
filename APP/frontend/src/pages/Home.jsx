@@ -213,11 +213,11 @@ const Home = () => {
   const isDefaultView = !searchTerm && filtroCategoria === 'todos' && precoMaximo === 1000
 
   return (
-    <div className="container">
-      <div className="navegacao-breadcrumb">
-        <button className="botao-breadcrumb">
-          INÍCIO &gt; CATÁLOGO DE JOGOS
-        </button>
+ <div className="suporte-page">
+      {/* Breadcrumb */}
+      <div className="breadcrumb">
+        <button className="breadcrumb-btn" onClick={() => navigate('/')}>INÍCIO</button>
+        <span className="breadcrumb-text">&gt; JOGOS</span>
       </div>
 
 
